@@ -27,54 +27,45 @@ mensaje (tabla `mensajes_log`, estado `SIMULADO`) sin enviarlo. Así se puede
 construir y probar todo el flujo antes de tener la línea de WhatsApp o el dominio
 de correo. Forzalo con `FORCE_DRY_RUN=true`.
 
-## Puesta en marcha
-
-Ver **[SETUP.md](./SETUP.md)** para el paso a paso completo (Supabase, Meta,
-Resend, plantillas, despliegue en Vercel).
-
-### Opción A — con Supabase (igual que producción)
+## Probarlo ahora (sin Supabase, sin Docker)
 
 ```bash
 npm install
-cp .env.example .env.local          # completar DATABASE_URL + Supabase
-npm run prisma:migrate              # crea las tablas
-SEED_ADMIN_EMAIL=vos@ejemplo.com SEED_ADMIN_PASSWORD='una-clave-larga' npm run db:seed
-npm run dev                         # http://localhost:3000
+npm run local
 ```
 
-### Opción B — sin instalar nada (Postgres embebido)
+Eso levanta un Postgres embebido, crea las tablas, siembra un admin + citas de
+ejemplo y abre el panel en **http://localhost:3000** ya logueado. Ctrl+C detiene
+todo. Los datos quedan en `./.pglite` entre corridas.
 
-Para trabajar el código sin crear todavía el proyecto de Supabase ni instalar
-Postgres/Docker, hay un Postgres embebido (PGlite) que habla el protocolo real:
+Qué probar: ver **[GUIA-PRUEBAS.md](./GUIA-PRUEBAS.md)**.
+
+Todos los mensajes salen en **modo prueba** (se registran, no se envían) hasta
+configurar WhatsApp y Resend.
+
+Disparar el cron de recordatorios a mano (con `npm run local` corriendo):
 
 ```bash
-npm install
-npm run db:local                    # deja esto corriendo (Postgres en :5433)
-# .env.local ya viene apuntando a PGlite; en otra terminal:
-npm run prisma:push                 # crea las tablas
-npm run dev
+npm run cron:local
 ```
 
-> El login del panel **sí** necesita Supabase Auth. Para ver el panel en local sin
-> Supabase, definí `DEV_AUTOLOGIN_EMAIL` (un correo que exista en la tabla
-> `usuarios`) al levantar el dev server — solo funciona fuera de producción:
->
-> ```bash
-> npm run verificar:tablero                       # siembra datos de ejemplo
-> DEV_AUTOLOGIN_EMAIL=tester@local npm run dev    # entra directo al panel
-> ```
-
-También se puede ejercitar toda la lógica de negocio sin UI:
+Otras verificaciones sin UI:
 
 ```bash
 npm run verificar           # crea una cita y valida confirmación + recordatorio
 npm run verificar:tablero   # valida las consultas del tablero de inicio
 ```
 
-Disparar el cron de recordatorios manualmente:
+## Puesta en marcha para producción
+
+Ver **[SETUP.md](./SETUP.md)** — paso a paso de Supabase, Meta, Resend, plantillas
+y despliegue en Vercel. Resumen:
 
 ```bash
-npm run cron:local
+cp .env.example .env.local          # completar DATABASE_URL + Supabase + resto
+npm run prisma:migrate              # crea las tablas
+SEED_ADMIN_EMAIL=vos@ejemplo.com SEED_ADMIN_PASSWORD='una-clave-larga' npm run db:seed
+npm run dev
 ```
 
 ## Estructura
