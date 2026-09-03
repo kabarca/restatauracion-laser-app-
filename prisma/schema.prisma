@@ -1,0 +1,132 @@
+// Restauración Láser — Sistema de recordatorios de citas
+// Postgres (Supabase). La autenticación la maneja Supabase Auth (tabla auth.users);
+// acá solo guardamos el perfil del miembro del equipo y su rol.
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum Rol {
+  ADMIN
+  STAFF
+}
+
+enum EstadoCita {
+  AGENDADA
+  RECORDADA
+  COMPLETADA
+  CANCELADA
+}
+
+enum Canal {
+  WHATSAPP
+  EMAIL
+}
+
+enum TipoMensaje {
+  CONFIRMACION
+  RECORDATORIO
+  REPROGRAMACION
+  CANCELACION
+}
+
+enum EstadoMensaje {
+  ENVIADO
+  FALLIDO
+  SIMULADO // dry-run: no había credenciales, se registró lo que se habría enviado
+}
+
+/// Perfil del miembro del equipo. `authUserId` = id de Supabase Auth (auth.users.id).
+model Usuario {
+  id            String   @id @default(cuid())
+  authUserId    String   @unique
+  nombre        String
+  email         String   @unique
+  rol           Rol      @default(STAFF)
+  activo        Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  citasCreadas  Cita[]   @relation("CitaCreadaPor")
+
+  @@map("usuarios")
+}
+
+model Cliente {
+  id        String   @id @default(cuid())
+  nombre    String
+  telefono  String // E.164, ej. +50688990000
+  email     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  citas     Cita[]
+
+  @@index([telefono])
+  @@index([email])
+  @@map("clientes")
+}
+
+model Cita {
+  id        String     @id @default(cuid())
+  cliente   Cliente    @relation(fields: [clienteId], references: [id])
+  clienteId String
+  servicio  String? // slug de una de las 9 líneas de servicio, opcional
+  nota      String?
+  fechaHora DateTime // guardada en UTC
+  estado    EstadoCita @default(AGENDADA)
+
+  creadaPor   Usuario @relation("CitaCreadaPor", fields: [creadaPorId], references: [id])
+  creadaPorId String
+
+  diasRecordatorio      Int       @default(2)
+  confirmacionEnviadaEn DateTime?
+  recordatorioEnviadoEn DateTime?
+  canceladaEn           DateTime?
+  motivoCancelacion     String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  mensajes MensajeLog[]
+
+  @@index([fechaHora])
+  @@index([estado])
+  @@index([recordatorioEnviadoEn])
+  @@map("citas")
+}
+
+model MensajeLog {
+  id          String        @id @default(cuid())
+  cita        Cita          @relation(fields: [citaId], references: [id], onDelete: Cascade)
+  citaId      String
+  canal       Canal
+  tipo        TipoMensaje
+  estado      EstadoMensaje
+  destino     String // teléfono o correo al que se envió
+  proveedorId String? // id del mensaje en Meta / Resend, para trazabilidad
+  error       String?
+  payload     Json? // cuerpo enviado (o que se habría enviado), para depurar
+  enviadoEn   DateTime      @default(now())
+
+  @@index([citaId])
+  @@index([tipo, estado])
+  @@map("mensajes_log")
+}
+
+/// Ajustes globales editables por un ADMIN (clave/valor). Ej.:
+/// diasRecordatorioDefault, horaEnvioRecordatorio, numeroWhatsappContacto.
+model Ajuste {
+  clave     String   @id
+  valor     String
+  updatedAt DateTime @updatedAt
+
+  @@map("ajustes")
+}

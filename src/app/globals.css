@@ -1,0 +1,101 @@
+@import "tailwindcss";
+
+@theme {
+  --color-marca: #0f172a;
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
+    Arial, sans-serif;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background: #f4f4f5;
+  color: #18181b;
+  font-family: var(--font-sans);
+}
+
+@layer components {
+  .campo {
+    width: 100%;
+    border-radius: 0.5rem;
+    border: 1px solid #d4d4d8;
+    background: #fff;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    outline: none;
+  }
+  .campo:focus {
+    border-color: #18181b;
+    box-shadow: 0 0 0 2px rgba(24, 24, 27, 0.1);
+  }
+  .campo:disabled {
+    opacity: 0.6;
+  }
+
+  .etiqueta {
+    display: block;
+    margin-bottom: 0.25rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #3f3f46;
+  }
+
+  .btn-primario,
+  .btn-secundario,
+  .btn-peligro {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border-radius: 0.5rem;
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: background-color 0.15s, border-color 0.15s, color 0.15s;
+    cursor: pointer;
+  }
+  .btn-primario:disabled,
+  .btn-secundario:disabled,
+  .btn-peligro:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+
+  .btn-primario {
+    background: #18181b;
+    color: #fff;
+    border: 1px solid #18181b;
+  }
+  .btn-primario:hover {
+    background: #27272a;
+  }
+
+  .btn-secundario {
+    background: #fff;
+    color: #27272a;
+    border: 1px solid #d4d4d8;
+  }
+  .btn-secundario:hover {
+    background: #fafafa;
+  }
+
+  .btn-peligro {
+    background: #fff;
+    color: #b91c1c;
+    border: 1px solid #fca5a5;
+  }
+  .btn-peligro:hover {
+    background: #fef2f2;
+  }
+
+  .tarjeta {
+    border-radius: 0.75rem;
+    border: 1px solid #e4e4e7;
+    background: #fff;
+    padding: 1.25rem;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  }
+}
