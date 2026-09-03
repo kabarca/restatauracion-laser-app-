@@ -55,11 +55,20 @@ npm run prisma:push                 # crea las tablas
 npm run dev
 ```
 
-> El login del panel **sí** necesita Supabase Auth. Sin él se puede ejercitar
-> toda la lógica de negocio con el script de verificación:
+> El login del panel **sí** necesita Supabase Auth. Para ver el panel en local sin
+> Supabase, definí `DEV_AUTOLOGIN_EMAIL` (un correo que exista en la tabla
+> `usuarios`) al levantar el dev server — solo funciona fuera de producción:
+>
+> ```bash
+> npm run verificar:tablero                       # siembra datos de ejemplo
+> DEV_AUTOLOGIN_EMAIL=tester@local npm run dev    # entra directo al panel
+> ```
+
+También se puede ejercitar toda la lógica de negocio sin UI:
 
 ```bash
-npm run verificar    # crea una cita de prueba y valida confirmación + recordatorio
+npm run verificar           # crea una cita y valida confirmación + recordatorio
+npm run verificar:tablero   # valida las consultas del tablero de inicio
 ```
 
 Disparar el cron de recordatorios manualmente:

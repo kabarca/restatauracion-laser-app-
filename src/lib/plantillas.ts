@@ -16,12 +16,16 @@ export type DatosMensaje = {
 const contacto = () => env.WHATSAPP_CONTACTO_PUBLICO;
 
 // ── WhatsApp: parámetros del BODY de la plantilla ────────────────────────────
-// Plantilla "confirmacion_cita":
-//   Hola {{1}}, tu cita con Restauración Láser quedó agendada para el {{2}} a
-//   las {{3}}. Cualquier cambio, escribinos por este mismo WhatsApp. ¡Te esperamos!
+// {{1}} = nombre · {{2}} = fecha larga · {{3}} = hora (ej. "2:30 p.m.")
+// Plantilla "confirmacion_cita" (texto sugerido, ver SETUP.md):
+//   Hola {{1}}, tu cita con Restauración Láser quedó agendada para el {{2}} a las {{3}}
+//
+//   Cualquier cambio, escribinos por este mismo WhatsApp. ¡Te esperamos!
 // Plantilla "recordatorio_cita":
-//   Hola {{1}}, te recordamos tu cita con Restauración Láser el {{2}} a las
-//   {{3}}. Si necesitás reprogramar, contactanos por acá. ¡Nos vemos pronto!
+//   Hola {{1}}, te recordamos tu cita con Restauración Láser el {{2}} a las {{3}}
+//
+//   Si necesitás reprogramar, contactanos por acá. ¡Nos vemos pronto!
+// (Sin punto tras {{3}} porque la hora ya termina en "m.").
 
 export function whatsappParams(d: DatosMensaje): string[] {
   return [d.nombreCliente, formatFechaLarga(d.fechaHora), formatHora(d.fechaHora)];
@@ -65,7 +69,7 @@ export function emailConfirmacion(d: DatosMensaje) {
   const subject = "Tu cita con Restauración Láser está confirmada";
   const text = `Hola ${d.nombreCliente},
 
-Confirmamos tu cita con Restauración Láser para el ${fecha} a las ${hora}.
+Confirmamos tu cita con Restauración Láser para el ${fecha} a las ${hora}
 
 Si necesitás modificar la fecha u hora, escribinos por WhatsApp al ${contacto()} y lo coordinamos.
 
@@ -74,7 +78,7 @@ Gracias por confiar en Restauración Láser.`;
     "Tu cita quedó confirmada",
     `<p style="margin:0 0 12px;">Hola ${d.nombreCliente},</p>
      <p style="margin:0 0 12px;">Confirmamos tu cita con Restauración Láser para el
-       <strong>${fecha}</strong> a las <strong>${hora}</strong>.</p>
+       <strong>${fecha}</strong> a las <strong>${hora}</strong></p>
      ${lineaServicio(d.servicio)}
      <p style="margin:0 0 12px;">Si necesitás modificar la fecha u hora, escribinos por
        WhatsApp al <strong>${contacto()}</strong> y lo coordinamos.</p>
@@ -89,7 +93,7 @@ export function emailRecordatorio(d: DatosMensaje) {
   const subject = `Recordatorio: tu cita con Restauración Láser es el ${fecha}`;
   const text = `Hola ${d.nombreCliente},
 
-Te recordamos tu cita con Restauración Láser programada para el ${fecha} a las ${hora}.
+Te recordamos tu cita con Restauración Láser programada para el ${fecha} a las ${hora}
 
 Si tenés alguna consulta antes de la cita o necesitás reprogramar, escribinos por WhatsApp al ${contacto()}.
 
@@ -98,7 +102,7 @@ Te esperamos.`;
     "Recordatorio de tu cita",
     `<p style="margin:0 0 12px;">Hola ${d.nombreCliente},</p>
      <p style="margin:0 0 12px;">Te recordamos tu cita con Restauración Láser programada para el
-       <strong>${fecha}</strong> a las <strong>${hora}</strong>.</p>
+       <strong>${fecha}</strong> a las <strong>${hora}</strong></p>
      ${lineaServicio(d.servicio)}
      <p style="margin:0 0 12px;">Si tenés alguna consulta antes de la cita o necesitás
        reprogramar, escribinos por WhatsApp al <strong>${contacto()}</strong>.</p>
@@ -113,7 +117,7 @@ export function emailReprogramacion(d: DatosMensaje) {
   const subject = "Tu cita con Restauración Láser cambió de fecha";
   const text = `Hola ${d.nombreCliente},
 
-Tu cita con Restauración Láser quedó reprogramada para el ${fecha} a las ${hora}.
+Tu cita con Restauración Láser quedó reprogramada para el ${fecha} a las ${hora}
 
 Si esta nueva fecha no te sirve, escribinos por WhatsApp al ${contacto()}.
 
@@ -122,7 +126,7 @@ Te esperamos.`;
     "Tu cita cambió de fecha",
     `<p style="margin:0 0 12px;">Hola ${d.nombreCliente},</p>
      <p style="margin:0 0 12px;">Tu cita con Restauración Láser quedó reprogramada para el
-       <strong>${fecha}</strong> a las <strong>${hora}</strong>.</p>
+       <strong>${fecha}</strong> a las <strong>${hora}</strong></p>
      ${lineaServicio(d.servicio)}
      <p style="margin:0 0 12px;">Si esta nueva fecha no te sirve, escribinos por WhatsApp al
        <strong>${contacto()}</strong>.</p>

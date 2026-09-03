@@ -136,6 +136,41 @@ export async function notificarCancelacion(citaId: string) {
   await enviarPar(cita, "CANCELACION");
 }
 
+/**
+ * Reintenta todos los mensajes cuyo ÚLTIMO registro (por cita+canal+tipo) quedó
+ * FALLIDO en los últimos `dias` días. Devuelve el resumen.
+ */
+export async function reintentarTodosLosFallidos(dias = 14) {
+  const desde = new Date(Date.now() - dias * 24 * 60 * 60 * 1000);
+  const logs = await prisma.mensajeLog.findMany({
+    where: { enviadoEn: { gte: desde } },
+    orderBy: { enviadoEn: "desc" },
+  });
+
+  // Quedarse con el más reciente por combinación cita+canal+tipo.
+  const vistos = new Set<string>();
+  const aReintentar: string[] = [];
+  for (const l of logs) {
+    const clave = `${l.citaId}|${l.canal}|${l.tipo}`;
+    if (vistos.has(clave)) continue;
+    vistos.add(clave);
+    if (l.estado === "FALLIDO") aReintentar.push(l.id);
+  }
+
+  let ok = 0;
+  let fallidos = 0;
+  for (const id of aReintentar) {
+    try {
+      const estado = await reintentarMensaje(id);
+      if (estado === "FALLIDO") fallidos++;
+      else ok++;
+    } catch {
+      fallidos++;
+    }
+  }
+  return { intentados: aReintentar.length, ok, fallidos };
+}
+
 /** Reintenta un envío que quedó FALLIDO, reusando el mismo tipo/canal. */
 export async function reintentarMensaje(mensajeLogId: string) {
   const log = await prisma.mensajeLog.findUniqueOrThrow({ where: { id: mensajeLogId } });

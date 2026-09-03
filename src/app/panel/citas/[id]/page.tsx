@@ -43,7 +43,7 @@ export default async function CitaDetallePage({
 
   return (
     <div className="space-y-5">
-      <Link href="/panel" className="text-sm text-zinc-500 hover:text-zinc-900">
+      <Link href="/panel/citas" className="text-sm text-zinc-500 hover:text-zinc-900">
         ← Volver a citas
       </Link>
 

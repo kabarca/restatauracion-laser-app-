@@ -78,16 +78,24 @@ categoría **Utility**, idioma **Español** (o "Español (CR)"):
 **`confirmacion_cita`** — cuerpo:
 
 ```
-Hola {{1}}, tu cita con Restauración Láser quedó agendada para el {{2}} a las {{3}}. Cualquier cambio, escribinos por este mismo WhatsApp. ¡Te esperamos!
+Hola {{1}}, tu cita con Restauración Láser quedó agendada para el {{2}} a las {{3}}
+
+Cualquier cambio, escribinos por este mismo WhatsApp. ¡Te esperamos!
 ```
 
 **`recordatorio_cita`** — cuerpo:
 
 ```
-Hola {{1}}, te recordamos tu cita con Restauración Láser el {{2}} a las {{3}}. Si necesitás reprogramar, contactanos por acá. ¡Nos vemos pronto!
+Hola {{1}}, te recordamos tu cita con Restauración Láser el {{2}} a las {{3}}
+
+Si necesitás reprogramar, contactanos por acá. ¡Nos vemos pronto!
 ```
 
-Ejemplos para la aprobación: `{{1}}` = `María`, `{{2}}` = `lunes 8 de septiembre de 2025`, `{{3}}` = `2:30 p. m.`
+Ejemplos para la aprobación: `{{1}}` = `María`, `{{2}}` = `lunes 8 de septiembre de 2025`, `{{3}}` = `2:30 p.m.`
+
+> El sistema manda `{{3}}` ya con formato `2:30 p.m.` (termina en punto), por eso el
+> texto **no lleva punto** después de `{{3}}` — se usa un salto de línea. Si preferís
+> el punto, cambiá `formatHora` en `src/lib/timezone.ts` para que no termine en ".".
 
 Cuando cambien de nombre o idioma, actualizar `WHATSAPP_TEMPLATE_CONFIRMACION`,
 `WHATSAPP_TEMPLATE_RECORDATORIO` y `WHATSAPP_TEMPLATE_LOCALE` en el entorno.

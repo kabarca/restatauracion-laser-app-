@@ -9,6 +9,15 @@ import type { Rol, Usuario } from "@/generated/prisma";
  * Cacheado por request para no repetir la consulta en cada Server Component.
  */
 export const getUsuarioActual = cache(async (): Promise<Usuario | null> => {
+  // Atajo SOLO para desarrollo local sin Supabase: si DEV_AUTOLOGIN_EMAIL está
+  // definido y NO es producción, se usa ese usuario. Nunca definir en producción.
+  if (process.env.NODE_ENV !== "production" && process.env.DEV_AUTOLOGIN_EMAIL) {
+    const dev = await prisma.usuario.findUnique({
+      where: { email: process.env.DEV_AUTOLOGIN_EMAIL },
+    });
+    return dev && dev.activo ? dev : null;
+  }
+
   const supabase = await createSupabaseServerClient();
   const {
     data: { user },

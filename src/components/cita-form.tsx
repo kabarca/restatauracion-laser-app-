@@ -1,10 +1,11 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { useFormStatus } from "react-dom";
 import { crearCita, type FormState } from "@/app/panel/citas/actions";
 import { SERVICIOS } from "@/lib/servicios";
 import { TelefonoInput } from "@/components/telefono-input";
+import { PreviewMensajes } from "@/components/preview-mensajes";
 
 function Enviar() {
   const { pending } = useFormStatus();
@@ -21,6 +22,11 @@ export function CitaForm({ diasRecordatorioDefault }: { diasRecordatorioDefault:
   const [state, formAction] = useActionState<FormState, FormData>(crearCita, { ok: false });
   const fe = state.fieldErrors ?? {};
 
+  const [nombre, setNombre] = useState("");
+  const [fecha, setFecha] = useState(hoy());
+  const [hora, setHora] = useState("09:00");
+  const [servicio, setServicio] = useState("");
+
   return (
     <form action={formAction} className="space-y-6">
       {state.error && (
@@ -35,7 +41,14 @@ export function CitaForm({ diasRecordatorioDefault }: { diasRecordatorioDefault:
           <label className="etiqueta" htmlFor="clienteNombre">
             Nombre
           </label>
-          <input id="clienteNombre" name="clienteNombre" required className="campo" />
+          <input
+            id="clienteNombre"
+            name="clienteNombre"
+            required
+            className="campo"
+            value={nombre}
+            onChange={(e) => setNombre(e.target.value)}
+          />
           {fe.clienteNombre && <p className="mt-1 text-sm text-red-600">{fe.clienteNombre[0]}</p>}
         </div>
         <div>
@@ -61,7 +74,8 @@ export function CitaForm({ diasRecordatorioDefault }: { diasRecordatorioDefault:
               type="date"
               required
               min={hoy()}
-              defaultValue={hoy()}
+              value={fecha}
+              onChange={(e) => setFecha(e.target.value)}
               className="campo"
             />
             {fe.fecha && <p className="mt-1 text-sm text-red-600">{fe.fecha[0]}</p>}
@@ -75,7 +89,8 @@ export function CitaForm({ diasRecordatorioDefault }: { diasRecordatorioDefault:
               name="hora"
               type="time"
               required
-              defaultValue="09:00"
+              value={hora}
+              onChange={(e) => setHora(e.target.value)}
               step={300}
               className="campo"
             />
@@ -88,7 +103,13 @@ export function CitaForm({ diasRecordatorioDefault }: { diasRecordatorioDefault:
             <label className="etiqueta" htmlFor="servicio">
               Servicio (opcional)
             </label>
-            <select id="servicio" name="servicio" className="campo" defaultValue="">
+            <select
+              id="servicio"
+              name="servicio"
+              className="campo"
+              value={servicio}
+              onChange={(e) => setServicio(e.target.value)}
+            >
               <option value="">— Sin especificar —</option>
               {SERVICIOS.map((s) => (
                 <option key={s.slug} value={s.slug}>
@@ -120,6 +141,8 @@ export function CitaForm({ diasRecordatorioDefault }: { diasRecordatorioDefault:
           <textarea id="nota" name="nota" rows={3} className="campo" />
         </div>
       </section>
+
+      <PreviewMensajes nombre={nombre} fecha={fecha} hora={hora} servicio={servicio || undefined} />
 
       <div className="flex items-center gap-3">
         <Enviar />

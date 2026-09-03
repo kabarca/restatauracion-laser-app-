@@ -38,7 +38,10 @@ async function ejecutar() {
 
   for (const cita of candidatas) {
     const fechaCitaCr = utcToCrWall(cita.fechaHora).fecha;
-    if (fechaCitaCr !== fechaCrEnNDias(cita.diasRecordatorio)) continue;
+    // Enviar cuando la fecha de la cita llegó a "hoy + N" o antes (citas creadas
+    // dentro de la ventana también reciben su único recordatorio). La cita sigue
+    // siendo futura por el filtro `fechaHora >= ahora` de la consulta.
+    if (fechaCitaCr > fechaCrEnNDias(cita.diasRecordatorio)) continue;
 
     try {
       await notificarRecordatorio(cita.id);

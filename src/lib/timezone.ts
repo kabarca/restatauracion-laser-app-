@@ -57,9 +57,14 @@ export function formatFechaCorta(date: Date): string {
   return fechaCortaFmt.format(date);
 }
 
-/** "2:30 p. m." */
+/** "2:30 p.m." (se compacta "p. m." → "p.m." para que cierre bien las frases). */
 export function formatHora(date: Date): string {
-  return horaFmt.format(date).replace(/\s+/g, " ").trim();
+  return horaFmt
+    .format(date)
+    .replace(/\s+/g, " ")
+    .trim()
+    .replace(/\ba\.?\s?m\.?$/i, "a.m.")
+    .replace(/\bp\.?\s?m\.?$/i, "p.m.");
 }
 
 /** "lunes 8 de septiembre de 2025 a las 2:30 p. m." */

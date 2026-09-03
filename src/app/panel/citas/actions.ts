@@ -12,6 +12,7 @@ import {
   notificarReprogramacion,
   notificarCancelacion,
   reintentarMensaje,
+  reintentarTodosLosFallidos,
 } from "@/lib/notificaciones";
 
 export type FormState = { ok: boolean; error?: string; fieldErrors?: Record<string, string[]> };
@@ -55,7 +56,7 @@ export async function crearCita(_prev: FormState, formData: FormData): Promise<F
     console.error("Fallo al enviar confirmación:", e);
   }
 
-  revalidatePath("/panel");
+  revalidatePath("/panel", "layout");
   redirect(`/panel/citas/${cita.id}?creada=1`);
 }
 
@@ -84,8 +85,7 @@ export async function reprogramarCita(
     console.error("Fallo al avisar reprogramación:", e);
   }
 
-  revalidatePath(`/panel/citas/${citaId}`);
-  revalidatePath("/panel");
+  revalidatePath("/panel", "layout");
   return { ok: true };
 }
 
@@ -108,26 +108,31 @@ export async function cancelarCita(
     console.error("Fallo al avisar cancelación:", e);
   }
 
-  revalidatePath(`/panel/citas/${citaId}`);
-  revalidatePath("/panel");
+  revalidatePath("/panel", "layout");
   return { ok: true };
 }
 
 export async function marcarEstado(citaId: string, estado: "COMPLETADA" | "AGENDADA") {
   await requireUsuario();
   await prisma.cita.update({ where: { id: citaId }, data: { estado } });
-  revalidatePath(`/panel/citas/${citaId}`);
-  revalidatePath("/panel");
+  revalidatePath("/panel", "layout");
 }
 
 export async function reenviarMensaje(citaId: string, mensajeLogId: string) {
   await requireUsuario();
   await reintentarMensaje(mensajeLogId);
-  revalidatePath(`/panel/citas/${citaId}`);
+  revalidatePath("/panel", "layout");
 }
 
 export async function reenviarConfirmacion(citaId: string) {
   await requireUsuario();
   await notificarConfirmacion(citaId);
-  revalidatePath(`/panel/citas/${citaId}`);
+  revalidatePath("/panel", "layout");
+}
+
+export async function reintentarFallidos() {
+  await requireUsuario();
+  const resumen = await reintentarTodosLosFallidos();
+  revalidatePath("/panel", "layout");
+  return resumen;
 }

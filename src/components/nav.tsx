@@ -7,12 +7,31 @@ import { cn } from "@/lib/cn";
 export function Nav({ esAdmin }: { esAdmin: boolean }) {
   const pathname = usePathname();
   const links = [
-    { href: "/panel", label: "Citas", exact: true },
-    { href: "/panel/citas/nueva", label: "Nueva cita" },
+    { href: "/panel", label: "Inicio", match: (p: string) => p === "/panel" },
+    {
+      href: "/panel/citas",
+      label: "Citas",
+      match: (p: string) =>
+        p === "/panel/citas" ||
+        (p.startsWith("/panel/citas/") && !p.startsWith("/panel/citas/nueva")),
+    },
+    {
+      href: "/panel/citas/nueva",
+      label: "Nueva cita",
+      match: (p: string) => p.startsWith("/panel/citas/nueva"),
+    },
     ...(esAdmin
       ? [
-          { href: "/panel/usuarios", label: "Equipo" },
-          { href: "/panel/ajustes", label: "Ajustes" },
+          {
+            href: "/panel/usuarios",
+            label: "Equipo",
+            match: (p: string) => p.startsWith("/panel/usuarios"),
+          },
+          {
+            href: "/panel/ajustes",
+            label: "Ajustes",
+            match: (p: string) => p.startsWith("/panel/ajustes"),
+          },
         ]
       : []),
   ];
@@ -20,7 +39,7 @@ export function Nav({ esAdmin }: { esAdmin: boolean }) {
   return (
     <nav className="flex gap-1">
       {links.map((l) => {
-        const activo = l.exact ? pathname === l.href : pathname.startsWith(l.href);
+        const activo = l.match(pathname);
         return (
           <Link
             key={l.href}

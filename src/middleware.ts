@@ -32,7 +32,11 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const esPanel = pathname.startsWith("/panel") || pathname.startsWith("/api/citas");
 
-  if (esPanel && !user) {
+  // Atajo de desarrollo (ver src/lib/auth.ts). Nunca en producción.
+  const devAutologin =
+    process.env.NODE_ENV !== "production" && Boolean(process.env.DEV_AUTOLOGIN_EMAIL);
+
+  if (esPanel && !user && !devAutologin) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     url.searchParams.set("next", pathname);

@@ -66,7 +66,7 @@ void (async () => {
   const { notificarRecordatorio } = await import("../src/lib/notificaciones");
   let enviados = 0;
   for (const c of candidatas) {
-    if (utcToCrWall(c.fechaHora).fecha !== fechaCrEnNDias(c.diasRecordatorio)) continue;
+    if (utcToCrWall(c.fechaHora).fecha > fechaCrEnNDias(c.diasRecordatorio)) continue;
     await notificarRecordatorio(c.id);
     enviados++;
   }

@@ -16,7 +16,7 @@ export function FiltrosCitas() {
         if (v) next.set(k, v);
         else next.delete(k);
       }
-      router.push(`/panel?${next.toString()}`);
+      router.push(`/panel/citas?${next.toString()}`);
     },
     [params, router],
   );
@@ -68,7 +68,7 @@ export function FiltrosCitas() {
         />
       </div>
       {[...params.keys()].length > 0 && (
-        <button className="btn-secundario" onClick={() => router.push("/panel")}>
+        <button className="btn-secundario" onClick={() => router.push("/panel/citas")}>
           Limpiar
         </button>
       )}

@@ -16,7 +16,8 @@
     "db:seed": "tsx --env-file=.env.local prisma/seed.ts",
     "db:local": "tsx scripts/dev-db.ts",
     "cron:local": "tsx --env-file=.env.local scripts/run-cron-local.ts",
-    "verificar": "tsx --env-file=.env.local scripts/verificar-flujos.ts"
+    "verificar": "tsx --env-file=.env.local scripts/verificar-flujos.ts",
+    "verificar:tablero": "tsx --env-file=.env.local scripts/verificar-tablero.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
