@@ -1,6 +1,28 @@
 import { prisma } from "@/lib/prisma";
 import { rangoDiaCrUtc, utcToCrWall } from "@/lib/timezone";
 
+/** Encuestas enviadas + respondidas, con promedio de puntaje. */
+export async function resumenEncuestas() {
+  const [enviadas, respondidas, agg, ultimas] = await Promise.all([
+    prisma.encuesta.count(),
+    prisma.encuesta.count({ where: { respondidaEn: { not: null } } }),
+    prisma.encuesta.aggregate({ _avg: { puntaje: true }, where: { puntaje: { not: null } } }),
+    prisma.encuesta.findMany({
+      where: { respondidaEn: { not: null } },
+      include: { cita: { include: { cliente: true } } },
+      orderBy: { respondidaEn: "desc" },
+      take: 50,
+    }),
+  ]);
+  return {
+    enviadas,
+    respondidas,
+    promedio: agg._avg.puntaje,
+    tasaRespuesta: enviadas > 0 ? respondidas / enviadas : 0,
+    ultimas,
+  };
+}
+
 /** Datos agregados para el tablero de inicio del panel. */
 export async function resumenTablero() {
   const ahora = new Date();

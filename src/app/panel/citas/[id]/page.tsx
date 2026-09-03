@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import { env } from "@/lib/env";
 import { requireUsuario } from "@/lib/auth";
 import { formatFechaHora, formatFechaCorta, formatHora, utcToCrWall } from "@/lib/timezone";
 import { nombreServicio } from "@/lib/servicios";
@@ -13,8 +14,10 @@ export const dynamic = "force-dynamic";
 const TIPO_LABEL: Record<TipoMensaje, string> = {
   CONFIRMACION: "Confirmación",
   RECORDATORIO: "Recordatorio",
+  RECORDATORIO_DIA: "Recordatorio (mismo día)",
   REPROGRAMACION: "Reprogramación",
   CANCELACION: "Cancelación",
+  ENCUESTA: "Encuesta",
 };
 const CANAL_LABEL: Record<Canal, string> = { WHATSAPP: "WhatsApp", EMAIL: "Correo" };
 
@@ -34,6 +37,7 @@ export default async function CitaDetallePage({
     include: {
       cliente: true,
       creadaPor: true,
+      encuesta: true,
       mensajes: { orderBy: { enviadoEn: "desc" } },
     },
   });
@@ -83,6 +87,14 @@ export default async function CitaDetallePage({
               : " · pendiente"}
           </p>
           <p>
+            <span className="text-zinc-500">Recordatorio mismo día:</span>{" "}
+            {cita.recordatorioMismoDia
+              ? cita.recordatorioDiaEnviadoEn
+                ? `enviado ${formatFechaCorta(cita.recordatorioDiaEnviadoEn)}`
+                : "activado · pendiente"
+              : "desactivado"}
+          </p>
+          <p>
             <span className="text-zinc-500">Confirmación:</span>{" "}
             {cita.confirmacionEnviadaEn
               ? `enviada ${formatFechaCorta(cita.confirmacionEnviadaEn)}`
@@ -109,8 +121,41 @@ export default async function CitaDetallePage({
           estado={cita.estado}
           fechaDefault={wall.fecha}
           horaDefault={wall.hora}
+          recordatorioMismoDia={cita.recordatorioMismoDia}
+          tieneEncuesta={cita.encuesta != null}
         />
       </div>
+
+      {cita.encuesta && (
+        <div className="tarjeta space-y-1 text-sm">
+          <h2 className="font-semibold text-zinc-900">Encuesta de satisfacción</h2>
+          <p>
+            <span className="text-zinc-500">Enviada:</span>{" "}
+            {formatFechaCorta(cita.encuesta.enviadaEn)}
+          </p>
+          {cita.encuesta.respondidaEn ? (
+            <>
+              <p>
+                <span className="text-zinc-500">Puntaje:</span>{" "}
+                <span className="text-amber-600">{"★".repeat(cita.encuesta.puntaje ?? 0)}</span>{" "}
+                ({cita.encuesta.puntaje}/5)
+              </p>
+              {cita.encuesta.comentario && (
+                <p>
+                  <span className="text-zinc-500">Comentario:</span> {cita.encuesta.comentario}
+                </p>
+              )}
+            </>
+          ) : (
+            <>
+              <p className="text-zinc-500">Sin responder todavía.</p>
+              <p className="break-all text-xs text-zinc-400">
+                Enlace: {env.NEXT_PUBLIC_APP_URL}/encuesta/{cita.encuesta.token}
+              </p>
+            </>
+          )}
+        </div>
+      )}
 
       <div className="tarjeta">
         <h2 className="mb-3 font-semibold text-zinc-900">Registro de mensajes</h2>

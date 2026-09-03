@@ -42,10 +42,14 @@ Estas venían en el plan (§4) y **no las puede decidir el desarrollo**:
 5. Crear las tablas y el primer admin:
 
    ```bash
-   npm run prisma:migrate      # nombre sugerido: init
+   npx dotenv-cli -e .env.local -- npx prisma migrate deploy   # aplica prisma/migrations
    SEED_ADMIN_EMAIL=vos@ejemplo.com SEED_ADMIN_PASSWORD='clave-larga-segura' \
      SEED_ADMIN_NOMBRE='Tu Nombre' npm run db:seed
    ```
+
+   > El repo ya trae la migración inicial versionada en `prisma/migrations/`.
+   > `npm run prisma:migrate` es solo para **crear nuevas** migraciones al cambiar
+   > el esquema (necesita una base de desarrollo aparte).
 
 > **Autenticación:** la maneja Supabase Auth. La tabla `usuarios` guarda solo el
 > perfil y el rol, ligado por `authUserId` al usuario de Supabase. No hay
@@ -156,9 +160,18 @@ Todos en voseo, tono sobrio. Confirmar si se agrega dirección/firma/logo.
   curl -X POST "https://TU-APP.vercel.app/api/cron/recordatorios?secret=EL_SECRETO"
   ```
 
-Lógica: busca citas `AGENDADA`/`RECORDADA`, sin recordatorio enviado, cuya fecha
-(en calendario de Costa Rica) caiga exactamente a `diasRecordatorio` días de hoy.
-Marca `recordatorioEnviadoEn` para no repetir.
+El mismo job hace 3 cosas (reglas puras en `src/lib/recordatorio-logica.ts`,
+cubiertas por tests):
+
+1. **Recordatorio N días antes** — citas cuya fecha (calendario CR) llegó a
+   `hoy + diasRecordatorio` o antes. Marca `recordatorioEnviadoEn`.
+2. **Recordatorio el mismo día** — solo si la cita tiene `recordatorioMismoDia`.
+   Reusa la plantilla `recordatorio_cita` de WhatsApp. Marca `recordatorioDiaEnviadoEn`.
+3. **Encuesta de satisfacción** — si está habilitada en **Ajustes**, `encuestaDiasDespues`
+   días después de la cita. **Solo correo** (no requiere plantilla de Meta). Crea
+   una fila `Encuesta` con un token y manda el enlace `/encuesta/{token}`.
+
+Activá el recordatorio del mismo día y la encuesta desde **Panel → Ajustes**.
 
 ---
 
@@ -168,12 +181,15 @@ Marca `recordatorioEnviadoEn` para no repetir.
 2. Cargar **todas** las variables de `.env.example` en Project Settings →
    Environment Variables (Production + Preview).
 3. Build command por defecto (`npm run build`, ya corre `prisma generate`).
-4. Primer deploy: correr las migraciones contra la base de producción:
+4. Primer deploy: aplicar las migraciones versionadas contra la base de producción:
    ```bash
-   DATABASE_URL=... DIRECT_URL=... npx prisma migrate deploy
+   DATABASE_URL='<pooler>' DIRECT_URL='<directa>' npx prisma migrate deploy
    ```
+   (Opcional: agregar `prisma migrate deploy` a un paso de post-deploy en Vercel.)
 5. Crear el primer admin (§1.5) apuntando a la base de producción.
-6. Verificar en **Ajustes** del panel que WhatsApp y Email digan *conectado*.
+6. Verificar en **Ajustes** del panel que WhatsApp y Email digan *conectado*, y
+   activar ahí el recordatorio del mismo día / la encuesta si se quieren.
+7. Poner `NEXT_PUBLIC_APP_URL` con el dominio real (los enlaces de la encuesta lo usan).
 
 ---
 

@@ -11,6 +11,7 @@ import {
   notificarConfirmacion,
   notificarReprogramacion,
   notificarCancelacion,
+  notificarEncuesta,
   reintentarMensaje,
   reintentarTodosLosFallidos,
 } from "@/lib/notificaciones";
@@ -45,6 +46,7 @@ export async function crearCita(_prev: FormState, formData: FormData): Promise<F
       nota: d.nota,
       fechaHora: d.fechaHora,
       diasRecordatorio: d.diasRecordatorio ?? env.RECORDATORIO_DIAS_DEFAULT,
+      recordatorioMismoDia: d.recordatorioMismoDia,
       creadaPor: { connect: { id: usuario.id } },
     },
   });
@@ -135,4 +137,16 @@ export async function reintentarFallidos() {
   const resumen = await reintentarTodosLosFallidos();
   revalidatePath("/panel", "layout");
   return resumen;
+}
+
+export async function alternarRecordatorioMismoDia(citaId: string, valor: boolean) {
+  await requireUsuario();
+  await prisma.cita.update({ where: { id: citaId }, data: { recordatorioMismoDia: valor } });
+  revalidatePath("/panel", "layout");
+}
+
+export async function enviarEncuesta(citaId: string) {
+  await requireUsuario();
+  await notificarEncuesta(citaId);
+  revalidatePath("/panel", "layout");
 }

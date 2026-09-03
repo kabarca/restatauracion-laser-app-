@@ -20,6 +20,11 @@ export function Nav({ esAdmin }: { esAdmin: boolean }) {
       label: "Nueva cita",
       match: (p: string) => p.startsWith("/panel/citas/nueva"),
     },
+    {
+      href: "/panel/encuestas",
+      label: "Encuestas",
+      match: (p: string) => p.startsWith("/panel/encuestas"),
+    },
     ...(esAdmin
       ? [
           {

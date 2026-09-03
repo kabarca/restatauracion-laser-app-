@@ -4,7 +4,10 @@ import { env } from "@/lib/env";
 /** Ajustes globales (tabla `ajustes`), con valores por defecto desde el entorno. */
 export const AJUSTES_DEFAULT: Record<string, string> = {
   diasRecordatorioDefault: String(env.RECORDATORIO_DIAS_DEFAULT),
+  recordatorioMismoDiaDefault: "false",
   whatsappContactoPublico: env.WHATSAPP_CONTACTO_PUBLICO,
+  encuestaHabilitada: "false",
+  encuestaDiasDespues: "1",
 };
 
 export async function getAjuste(clave: string): Promise<string> {

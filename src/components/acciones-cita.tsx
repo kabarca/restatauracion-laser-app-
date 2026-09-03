@@ -8,6 +8,8 @@ import {
   marcarEstado,
   reenviarMensaje,
   reenviarConfirmacion,
+  alternarRecordatorioMismoDia,
+  enviarEncuesta,
   type FormState,
 } from "@/app/panel/citas/actions";
 import type { EstadoCita } from "@/generated/prisma";
@@ -26,11 +28,15 @@ export function AccionesCita({
   estado,
   fechaDefault,
   horaDefault,
+  recordatorioMismoDia,
+  tieneEncuesta,
 }: {
   citaId: string;
   estado: EstadoCita;
   fechaDefault: string;
   horaDefault: string;
+  recordatorioMismoDia: boolean;
+  tieneEncuesta: boolean;
 }) {
   const [abrir, setAbrir] = useState<"reprogramar" | "cancelar" | null>(null);
   const [repState, repAction] = useActionState<FormState, FormData>(
@@ -70,7 +76,22 @@ export function AccionesCita({
         <form action={reenviarConfirmacion.bind(null, citaId)}>
           <Boton className="btn-secundario">Reenviar confirmación</Boton>
         </form>
+        {!cancelada && !tieneEncuesta && (
+          <form action={enviarEncuesta.bind(null, citaId)}>
+            <Boton className="btn-secundario">Enviar encuesta</Boton>
+          </form>
+        )}
       </div>
+
+      {!cancelada && (
+        <form action={alternarRecordatorioMismoDia.bind(null, citaId, !recordatorioMismoDia)}>
+          <Boton className="btn-secundario">
+            {recordatorioMismoDia
+              ? "Desactivar recordatorio del mismo día"
+              : "Activar recordatorio del mismo día"}
+          </Boton>
+        </form>
+      )}
 
       {abrir === "reprogramar" && (
         <form action={repAction} className="tarjeta space-y-3">

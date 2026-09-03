@@ -57,8 +57,10 @@ void (async () => {
       });
     });
 
-  console.log("▶  Aplicando esquema…");
-  await run("npx", ["prisma", "db", "push", "--skip-generate"]);
+  console.log("▶  Aplicando migraciones…");
+  await run("npx", ["prisma", "migrate", "deploy"]);
+  // Sincroniza cambios de esquema locales todavía sin migración (dev).
+  await run("npx", ["prisma", "db", "push", "--skip-generate", "--accept-data-loss"]);
 
   console.log("▶  Sembrando datos de ejemplo…");
   await run("npx", ["tsx", "scripts/seed-local.ts"]);

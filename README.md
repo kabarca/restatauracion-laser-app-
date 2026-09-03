@@ -7,6 +7,10 @@ y **recordatorios** automáticos por WhatsApp y correo.
 - **Flujo B:** al guardar, se envía de inmediato la confirmación (WhatsApp + correo).
 - **Flujo C:** un job diario (9:00 a.m. Costa Rica) envía el recordatorio N días
   antes (por defecto 2), una sola vez por cita.
+- Opcionales (se activan en **Ajustes**): recordatorio adicional el mismo día de
+  la cita, y encuesta de satisfacción por correo unos días después.
+- Reprogramar / cancelar con aviso al cliente, reintento de envíos fallidos
+  (automático ante fallos transitorios + manual desde el panel).
 
 ## Stack
 
@@ -52,6 +56,7 @@ npm run cron:local
 Otras verificaciones sin UI:
 
 ```bash
+npm test                    # suite de unit tests (timezone, validación, reglas del cron)
 npm run verificar           # crea una cita y valida confirmación + recordatorio
 npm run verificar:tablero   # valida las consultas del tablero de inicio
 ```

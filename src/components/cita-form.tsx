@@ -18,7 +18,13 @@ function Enviar() {
 
 const hoy = () => new Date(Date.now() - 6 * 3600 * 1000).toISOString().slice(0, 10);
 
-export function CitaForm({ diasRecordatorioDefault }: { diasRecordatorioDefault: number }) {
+export function CitaForm({
+  diasRecordatorioDefault,
+  recordatorioMismoDiaDefault,
+}: {
+  diasRecordatorioDefault: number;
+  recordatorioMismoDiaDefault: boolean;
+}) {
   const [state, formAction] = useActionState<FormState, FormData>(crearCita, { ok: false });
   const fe = state.fieldErrors ?? {};
 
@@ -133,6 +139,15 @@ export function CitaForm({ diasRecordatorioDefault }: { diasRecordatorioDefault:
             />
           </div>
         </div>
+
+        <label className="flex items-center gap-2 text-sm text-zinc-700">
+          <input
+            type="checkbox"
+            name="recordatorioMismoDia"
+            defaultChecked={recordatorioMismoDiaDefault}
+          />
+          Enviar también un recordatorio el mismo día de la cita
+        </label>
 
         <div>
           <label className="etiqueta" htmlFor="nota">

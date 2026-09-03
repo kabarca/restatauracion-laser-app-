@@ -8,10 +8,18 @@ const CR_OFFSET_MS = 6 * 60 * 60 * 1000; // UTC = CR + 6h
 
 /** "2025-09-08" + "14:30" (hora de pared en Costa Rica) → Date en UTC. */
 export function crWallToUtc(fecha: string, hora: string): Date {
-  const [y, m, d] = fecha.split("-").map(Number);
-  const [hh, mm] = hora.split(":").map(Number);
-  if (!y || !m || !d || Number.isNaN(hh) || Number.isNaN(mm)) {
-    throw new Error(`Fecha u hora inválida: "${fecha}" "${hora}"`);
+  const mF = /^(\d{4})-(\d{2})-(\d{2})$/.exec(fecha);
+  const mH = /^(\d{2}):(\d{2})$/.exec(hora);
+  if (!mF || !mH) throw new Error(`Fecha u hora inválida: "${fecha}" "${hora}"`);
+  const [, ys, ms, ds] = mF;
+  const [, hhs, mms] = mH;
+  const y = +ys;
+  const m = +ms;
+  const d = +ds;
+  const hh = +hhs;
+  const mm = +mms;
+  if (m < 1 || m > 12 || d < 1 || d > 31 || hh > 23 || mm > 59) {
+    throw new Error(`Fecha u hora fuera de rango: "${fecha}" "${hora}"`);
   }
   return new Date(Date.UTC(y, m - 1, d, hh, mm) + CR_OFFSET_MS);
 }

@@ -1,9 +1,11 @@
 import { env, dryRun } from "@/lib/env";
+import { conReintentos } from "@/lib/reintentos";
 
 export type ResultadoEnvio = {
   estado: "ENVIADO" | "FALLIDO" | "SIMULADO";
   proveedorId?: string;
   error?: string;
+  intentos?: number;
   payload: unknown;
 };
 
@@ -15,8 +17,11 @@ type PlantillaParams = {
   bodyParams: string[];
 };
 
+class ErrorTransitorio extends Error {}
+
 /**
- * Envía una plantilla (HSM) por WhatsApp Cloud API.
+ * Envía una plantilla (HSM) por WhatsApp Cloud API, con reintentos ante fallos
+ * transitorios (HTTP 429 / 5xx / error de red).
  * En dry-run devuelve estado "SIMULADO" con el payload que se habría enviado.
  */
 export async function enviarPlantillaWhatsapp({
@@ -46,35 +51,51 @@ export async function enviarPlantillaWhatsapp({
   }
 
   const url = `https://graph.facebook.com/${env.WHATSAPP_API_VERSION}/${env.WHATSAPP_PHONE_NUMBER_ID}/messages`;
+  let intentos = 0;
 
   try {
-    const res = await fetch(url, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${env.WHATSAPP_ACCESS_TOKEN}`,
-        "Content-Type": "application/json",
+    const r = await conReintentos<ResultadoEnvio>(
+      async () => {
+        intentos++;
+        let res: Response;
+        try {
+          res = await fetch(url, {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${env.WHATSAPP_ACCESS_TOKEN}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(payload),
+          });
+        } catch (e) {
+          throw new ErrorTransitorio(e instanceof Error ? e.message : "error de red");
+        }
+
+        const json = (await res.json().catch(() => ({}))) as {
+          messages?: { id: string }[];
+          error?: { message?: string; error_data?: { details?: string } };
+        };
+
+        if (res.status === 429 || res.status >= 500) {
+          throw new ErrorTransitorio(
+            json.error?.message || `HTTP ${res.status} (reintentable)`,
+          );
+        }
+        if (!res.ok) {
+          const msg =
+            json.error?.error_data?.details || json.error?.message || `HTTP ${res.status}`;
+          return { estado: "FALLIDO", error: msg, payload };
+        }
+        return { estado: "ENVIADO", proveedorId: json.messages?.[0]?.id, payload };
       },
-      body: JSON.stringify(payload),
-    });
-
-    const json = (await res.json()) as {
-      messages?: { id: string }[];
-      error?: { message?: string; error_data?: { details?: string } };
-    };
-
-    if (!res.ok) {
-      const msg =
-        json.error?.error_data?.details ||
-        json.error?.message ||
-        `HTTP ${res.status}`;
-      return { estado: "FALLIDO", error: msg, payload };
-    }
-
-    return { estado: "ENVIADO", proveedorId: json.messages?.[0]?.id, payload };
+      { esTransitorio: (x) => x instanceof ErrorTransitorio },
+    );
+    return { ...r, intentos };
   } catch (e) {
     return {
       estado: "FALLIDO",
-      error: e instanceof Error ? e.message : "Error de red al llamar a Meta",
+      error: e instanceof Error ? e.message : "Error al llamar a Meta",
+      intentos,
       payload,
     };
   }

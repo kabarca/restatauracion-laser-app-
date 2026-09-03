@@ -12,6 +12,20 @@ export async function guardarAjustes(_prev: { ok: boolean }, formData: FormData)
     await setAjuste("diasRecordatorioDefault", String(dias));
   }
 
+  await setAjuste(
+    "recordatorioMismoDiaDefault",
+    formData.get("recordatorioMismoDiaDefault") === "on" ? "true" : "false",
+  );
+
+  await setAjuste(
+    "encuestaHabilitada",
+    formData.get("encuestaHabilitada") === "on" ? "true" : "false",
+  );
+  const encDias = parseInt(String(formData.get("encuestaDiasDespues") ?? ""), 10);
+  if (Number.isFinite(encDias) && encDias >= 0 && encDias <= 30) {
+    await setAjuste("encuestaDiasDespues", String(encDias));
+  }
+
   revalidatePath("/panel/ajustes");
   revalidatePath("/panel/citas/nueva");
   return { ok: true };

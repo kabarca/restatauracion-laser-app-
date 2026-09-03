@@ -111,6 +111,54 @@ Te esperamos.`;
   return { subject, text, html };
 }
 
+export function emailRecordatorioDia(d: DatosMensaje) {
+  const hora = formatHora(d.fechaHora);
+  const subject = "Hoy es tu cita con Restauración Láser";
+  const text = `Hola ${d.nombreCliente},
+
+Te recordamos que tu cita con Restauración Láser es hoy a las ${hora}
+
+Si surgió algún inconveniente, escribinos por WhatsApp al ${contacto()}.
+
+Te esperamos.`;
+  const html = layout(
+    "Hoy es tu cita",
+    `<p style="margin:0 0 12px;">Hola ${d.nombreCliente},</p>
+     <p style="margin:0 0 12px;">Te recordamos que tu cita con Restauración Láser es
+       <strong>hoy a las ${hora}</strong></p>
+     ${lineaServicio(d.servicio)}
+     <p style="margin:0 0 12px;">Si surgió algún inconveniente, escribinos por WhatsApp al
+       <strong>${contacto()}</strong>.</p>
+     <p style="margin:0;">Te esperamos.</p>`,
+  );
+  return { subject, text, html };
+}
+
+export function emailEncuesta(d: DatosMensaje & { url: string }) {
+  const subject = "¿Cómo te fue con Restauración Láser?";
+  const text = `Hola ${d.nombreCliente},
+
+Gracias por confiar en Restauración Láser. Nos ayudaría mucho saber cómo te fue: es 1 minuto.
+
+Responder la encuesta: ${d.url}
+
+¡Gracias!`;
+  const html = layout(
+    "¿Cómo te fue?",
+    `<p style="margin:0 0 12px;">Hola ${d.nombreCliente},</p>
+     <p style="margin:0 0 16px;">Gracias por confiar en Restauración Láser. Nos ayudaría
+       mucho saber cómo te fue con el servicio — es 1 minuto.</p>
+     <p style="margin:0 0 8px;">
+       <a href="${d.url}" style="display:inline-block;background:#0f172a;color:#fff;
+         text-decoration:none;padding:10px 18px;border-radius:8px;font-weight:600;">
+         Responder la encuesta</a>
+     </p>
+     <p style="margin:12px 0 0;color:#71717a;font-size:12px;">Si el botón no funciona,
+       copiá este enlace: ${d.url}</p>`,
+  );
+  return { subject, text, html };
+}
+
 export function emailReprogramacion(d: DatosMensaje) {
   const fecha = formatFechaLarga(d.fechaHora);
   const hora = formatHora(d.fechaHora);

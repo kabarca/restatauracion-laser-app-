@@ -33,6 +33,10 @@ export const citaFormSchema = z
       .refine((v) => v === undefined || SERVICIO_SLUGS.includes(v as never), "Servicio inválido"),
     nota: z.string().trim().max(1000).optional().or(z.literal("")),
     diasRecordatorio: z.coerce.number().int().min(0).max(30).optional(),
+    recordatorioMismoDia: z
+      .union([z.literal("on"), z.literal("true"), z.literal("")])
+      .optional()
+      .transform((v) => v === "on" || v === "true"),
   })
   .transform((data, ctx) => {
     let telefonoE164: string;
@@ -76,6 +80,7 @@ export const citaFormSchema = z
       servicio: data.servicio,
       nota: data.nota ? data.nota : undefined,
       diasRecordatorio: data.diasRecordatorio,
+      recordatorioMismoDia: data.recordatorioMismoDia,
     };
   });
 

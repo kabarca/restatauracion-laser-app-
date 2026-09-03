@@ -6,8 +6,10 @@ import {
   whatsappParams,
   emailConfirmacion,
   emailRecordatorio,
+  emailRecordatorioDia,
   emailReprogramacion,
   emailCancelacion,
+  emailEncuesta,
   emailAlertaInterna,
 } from "@/lib/plantillas";
 import { Prisma, type Canal, type TipoMensaje, type Cita, type Cliente } from "@/generated/prisma";
@@ -17,7 +19,43 @@ type CitaConCliente = Cita & { cliente: Cliente };
 const PLANTILLA_WA: Partial<Record<TipoMensaje, string>> = {
   CONFIRMACION: env.WHATSAPP_TEMPLATE_CONFIRMACION,
   RECORDATORIO: env.WHATSAPP_TEMPLATE_RECORDATORIO,
+  RECORDATORIO_DIA: env.WHATSAPP_TEMPLATE_RECORDATORIO,
 };
+
+function datosDe(cita: CitaConCliente) {
+  return {
+    nombreCliente: cita.cliente.nombre,
+    fechaHora: cita.fechaHora,
+    servicio: cita.servicio,
+  };
+}
+
+async function urlEncuesta(citaId: string): Promise<string> {
+  const enc = await prisma.encuesta.upsert({
+    where: { citaId },
+    create: { citaId },
+    update: {},
+  });
+  return `${env.NEXT_PUBLIC_APP_URL}/encuesta/${enc.token}`;
+}
+
+async function construirEmail(tipo: TipoMensaje, cita: CitaConCliente) {
+  const d = datosDe(cita);
+  switch (tipo) {
+    case "CONFIRMACION":
+      return emailConfirmacion(d);
+    case "RECORDATORIO":
+      return emailRecordatorio(d);
+    case "RECORDATORIO_DIA":
+      return emailRecordatorioDia(d);
+    case "REPROGRAMACION":
+      return emailReprogramacion(d);
+    case "CANCELACION":
+      return emailCancelacion({ ...d, motivo: cita.motivoCancelacion });
+    case "ENCUESTA":
+      return emailEncuesta({ ...d, url: await urlEncuesta(cita.id) });
+  }
+}
 
 async function registrar(
   citaId: string,
@@ -35,6 +73,7 @@ async function registrar(
       estado: r.estado,
       proveedorId: r.proveedorId,
       error: r.error,
+      intentos: r.intentos ?? 1,
       payload: (r.payload ?? Prisma.JsonNull) as Prisma.InputJsonValue,
     },
   });
@@ -52,39 +91,21 @@ async function alertarEquipo(cita: CitaConCliente, canal: Canal, tipo: TipoMensa
   await enviarEmail({ to: env.EMAIL_EQUIPO, subject, html, text });
 }
 
-/** Envía WhatsApp + email de un tipo dado y registra ambos en MensajeLog. */
+/** Envía WhatsApp (si el tipo tiene plantilla) + email, y registra ambos. */
 async function enviarPar(cita: CitaConCliente, tipo: TipoMensaje) {
-  const datos = {
-    nombreCliente: cita.cliente.nombre,
-    fechaHora: cita.fechaHora,
-    servicio: cita.servicio,
-  };
-
-  // WhatsApp (solo para tipos con plantilla aprobada: confirmación y recordatorio).
   const plantilla = PLANTILLA_WA[tipo];
   if (plantilla) {
     const wa = await enviarPlantillaWhatsapp({
       to: cita.cliente.telefono,
       template: plantilla,
       locale: env.WHATSAPP_TEMPLATE_LOCALE,
-      bodyParams: whatsappParams(datos),
+      bodyParams: whatsappParams(datosDe(cita)),
     });
     await registrar(cita.id, "WHATSAPP", tipo, cita.cliente.telefono, wa);
-    if (wa.estado === "FALLIDO") {
-      await alertarEquipo(cita, "WHATSAPP", tipo, wa.error ?? "desconocido");
-    }
+    if (wa.estado === "FALLIDO") await alertarEquipo(cita, "WHATSAPP", tipo, wa.error ?? "?");
   }
 
-  // Email
-  const email =
-    tipo === "CONFIRMACION"
-      ? emailConfirmacion(datos)
-      : tipo === "RECORDATORIO"
-        ? emailRecordatorio(datos)
-        : tipo === "REPROGRAMACION"
-          ? emailReprogramacion(datos)
-          : emailCancelacion({ ...datos, motivo: cita.motivoCancelacion });
-
+  const email = await construirEmail(tipo, cita);
   const em = await enviarEmail({
     to: cita.cliente.email,
     subject: email.subject,
@@ -92,26 +113,17 @@ async function enviarPar(cita: CitaConCliente, tipo: TipoMensaje) {
     text: email.text,
   });
   await registrar(cita.id, "EMAIL", tipo, cita.cliente.email, em);
-  if (em.estado === "FALLIDO") {
-    await alertarEquipo(cita, "EMAIL", tipo, em.error ?? "desconocido");
-  }
+  if (em.estado === "FALLIDO") await alertarEquipo(cita, "EMAIL", tipo, em.error ?? "?");
 }
 
 async function cargarCita(citaId: string): Promise<CitaConCliente> {
-  const cita = await prisma.cita.findUniqueOrThrow({
-    where: { id: citaId },
-    include: { cliente: true },
-  });
-  return cita;
+  return prisma.cita.findUniqueOrThrow({ where: { id: citaId }, include: { cliente: true } });
 }
 
 export async function notificarConfirmacion(citaId: string) {
   const cita = await cargarCita(citaId);
   await enviarPar(cita, "CONFIRMACION");
-  await prisma.cita.update({
-    where: { id: citaId },
-    data: { confirmacionEnviadaEn: new Date() },
-  });
+  await prisma.cita.update({ where: { id: citaId }, data: { confirmacionEnviadaEn: new Date() } });
 }
 
 export async function notificarRecordatorio(citaId: string) {
@@ -126,19 +138,38 @@ export async function notificarRecordatorio(citaId: string) {
   });
 }
 
-export async function notificarReprogramacion(citaId: string) {
+export async function notificarRecordatorioDia(citaId: string) {
   const cita = await cargarCita(citaId);
-  await enviarPar(cita, "REPROGRAMACION");
+  await enviarPar(cita, "RECORDATORIO_DIA");
+  await prisma.cita.update({
+    where: { id: citaId },
+    data: { recordatorioDiaEnviadoEn: new Date() },
+  });
+}
+
+export async function notificarEncuesta(citaId: string) {
+  const cita = await cargarCita(citaId);
+  const { subject, html, text } = emailEncuesta({
+    ...datosDe(cita),
+    url: await urlEncuesta(cita.id),
+  });
+  const em = await enviarEmail({ to: cita.cliente.email, subject, html, text });
+  await registrar(cita.id, "EMAIL", "ENCUESTA", cita.cliente.email, em);
+  await prisma.encuesta.update({ where: { citaId }, data: { enviadaEn: new Date() } });
+  if (em.estado === "FALLIDO") await alertarEquipo(cita, "EMAIL", "ENCUESTA", em.error ?? "?");
+}
+
+export async function notificarReprogramacion(citaId: string) {
+  await enviarPar(await cargarCita(citaId), "REPROGRAMACION");
 }
 
 export async function notificarCancelacion(citaId: string) {
-  const cita = await cargarCita(citaId);
-  await enviarPar(cita, "CANCELACION");
+  await enviarPar(await cargarCita(citaId), "CANCELACION");
 }
 
 /**
- * Reintenta todos los mensajes cuyo ÚLTIMO registro (por cita+canal+tipo) quedó
- * FALLIDO en los últimos `dias` días. Devuelve el resumen.
+ * Reintenta los mensajes cuyo ÚLTIMO registro (por cita+canal+tipo) quedó
+ * FALLIDO en los últimos `dias` días.
  */
 export async function reintentarTodosLosFallidos(dias = 14) {
   const desde = new Date(Date.now() - dias * 24 * 60 * 60 * 1000);
@@ -147,7 +178,6 @@ export async function reintentarTodosLosFallidos(dias = 14) {
     orderBy: { enviadoEn: "desc" },
   });
 
-  // Quedarse con el más reciente por combinación cita+canal+tipo.
   const vistos = new Set<string>();
   const aReintentar: string[] = [];
   for (const l of logs) {
@@ -175,11 +205,6 @@ export async function reintentarTodosLosFallidos(dias = 14) {
 export async function reintentarMensaje(mensajeLogId: string) {
   const log = await prisma.mensajeLog.findUniqueOrThrow({ where: { id: mensajeLogId } });
   const cita = await cargarCita(log.citaId);
-  const datos = {
-    nombreCliente: cita.cliente.nombre,
-    fechaHora: cita.fechaHora,
-    servicio: cita.servicio,
-  };
 
   let r: ResultadoEnvio;
   if (log.canal === "WHATSAPP") {
@@ -189,17 +214,10 @@ export async function reintentarMensaje(mensajeLogId: string) {
       to: cita.cliente.telefono,
       template: plantilla,
       locale: env.WHATSAPP_TEMPLATE_LOCALE,
-      bodyParams: whatsappParams(datos),
+      bodyParams: whatsappParams(datosDe(cita)),
     });
   } else {
-    const email =
-      log.tipo === "CONFIRMACION"
-        ? emailConfirmacion(datos)
-        : log.tipo === "RECORDATORIO"
-          ? emailRecordatorio(datos)
-          : log.tipo === "REPROGRAMACION"
-            ? emailReprogramacion(datos)
-            : emailCancelacion({ ...datos, motivo: cita.motivoCancelacion });
+    const email = await construirEmail(log.tipo, cita);
     r = await enviarEmail({
       to: cita.cliente.email,
       subject: email.subject,

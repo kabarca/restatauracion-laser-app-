@@ -73,7 +73,25 @@ FORCE_DRY_RUN=false WHATSAPP_PHONE_NUMBER_ID=000 WHATSAPP_ACCESS_TOKEN=malo npm 
 - [ ] Filtrar por estado y por rango de fechas.
 - [ ] **Exportar CSV** descarga el listado filtrado (se abre en Excel/Numbers).
 
-## 7. Equipo y ajustes (solo ADMIN)
+## 7. Recordatorio el mismo día (Fase 4)
+
+- [ ] **Ajustes** → activar "Recordatorio adicional el mismo día" → Guardar.
+- [ ] Crear una cita **para hoy** (o abrir una y usar "Activar recordatorio del
+      mismo día" en Acciones).
+- [ ] Correr `npm run cron:local` → la respuesta trae `"recordatoriosDia": 1` y en
+      el registro de la cita aparece una fila **Recordatorio (mismo día)**.
+
+## 8. Encuesta de satisfacción (Fase 4)
+
+- [ ] **Ajustes** → activar "Encuesta de satisfacción post-servicio", días = 1.
+- [ ] Los datos de ejemplo traen la cita **Condominio Vista Real** (hace 3 días).
+- [ ] Correr `npm run cron:local` → `"encuestas": 1`.
+- [ ] En el detalle de esa cita, sección **Encuesta** → copiar el enlace
+      `/encuesta/{token}` y abrirlo en el navegador (no pide login).
+- [ ] Calificar + comentar + Enviar.
+- [ ] **Encuestas** (en el menú) → aparece la respuesta, con promedio y tasa.
+
+## 9. Equipo y ajustes (solo ADMIN)
 
 - [ ] **Equipo**: crear un miembro (muestra una contraseña temporal). *Nota:*
       esto necesita Supabase configurado; en modo local sin Supabase da un aviso.
@@ -81,7 +99,7 @@ FORCE_DRY_RUN=false WHATSAPP_PHONE_NUMBER_ID=000 WHATSAPP_ACCESS_TOKEN=malo npm 
 - [ ] **Ajustes**: cambiar "días antes para el recordatorio" → se aplica a las
       citas nuevas. Ver el estado de las integraciones (WhatsApp/Email).
 
-## 8. Zona horaria
+## 10. Zona horaria
 
 - [ ] Crear una cita a las `14:30`. En el detalle y los mensajes debe decir
       **2:30 p.m.** (hora de Costa Rica). El valor guardado en la base está en

@@ -33,8 +33,10 @@ enum Canal {
 enum TipoMensaje {
   CONFIRMACION
   RECORDATORIO
+  RECORDATORIO_DIA // recordatorio adicional el mismo día de la cita
   REPROGRAMACION
   CANCELACION
+  ENCUESTA // encuesta de satisfacción post-servicio
 }
 
 enum EstadoMensaje {
@@ -86,21 +88,40 @@ model Cita {
   creadaPor   Usuario @relation("CitaCreadaPor", fields: [creadaPorId], references: [id])
   creadaPorId String
 
-  diasRecordatorio      Int       @default(2)
-  confirmacionEnviadaEn DateTime?
-  recordatorioEnviadoEn DateTime?
-  canceladaEn           DateTime?
-  motivoCancelacion     String?
+  diasRecordatorio       Int       @default(2)
+  recordatorioMismoDia   Boolean   @default(false) // enviar además un recordatorio el día de la cita
+  confirmacionEnviadaEn  DateTime?
+  recordatorioEnviadoEn  DateTime?
+  recordatorioDiaEnviadoEn DateTime?
+  canceladaEn            DateTime?
+  motivoCancelacion      String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   mensajes MensajeLog[]
+  encuesta Encuesta?
 
   @@index([fechaHora])
   @@index([estado])
   @@index([recordatorioEnviadoEn])
   @@map("citas")
+}
+
+/// Encuesta de satisfacción enviada después de la cita. Se responde en una
+/// página pública sin login: /encuesta/{token}.
+model Encuesta {
+  id           String    @id @default(cuid())
+  cita         Cita      @relation(fields: [citaId], references: [id], onDelete: Cascade)
+  citaId       String    @unique
+  token        String    @unique @default(cuid())
+  enviadaEn    DateTime  @default(now())
+  respondidaEn DateTime?
+  puntaje      Int? // 1 a 5
+  comentario   String?
+
+  @@index([respondidaEn])
+  @@map("encuestas")
 }
 
 model MensajeLog {
@@ -113,6 +134,7 @@ model MensajeLog {
   destino     String // teléfono o correo al que se envió
   proveedorId String? // id del mensaje en Meta / Resend, para trazabilidad
   error       String?
+  intentos    Int           @default(1) // llamadas al proveedor antes de este resultado
   payload     Json? // cuerpo enviado (o que se habría enviado), para depurar
   enviadoEn   DateTime      @default(now())
 

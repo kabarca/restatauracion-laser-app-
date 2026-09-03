@@ -26,11 +26,20 @@ void (async () => {
 
   const dia = (n: number) => utcToCrWall(new Date(Date.now() + n * 86400000)).fecha;
 
-  const ejemplos = [
-    { nombre: "María Rodríguez", servicio: "remocion-de-oxido", offset: 2, hora: "09:00" },
-    { nombre: "Carlos Jiménez", servicio: "remocion-de-grafiti", offset: 4, hora: "14:30" },
-    { nombre: "Instituto Nacional de Seguros", servicio: "restauracion-patrimonial", offset: 9, hora: "10:00" },
-    { nombre: "Taller Vindas", servicio: "remocion-de-grasa-y-aceite", offset: 1, hora: "08:00" },
+  const ejemplos: {
+    nombre: string;
+    servicio: string;
+    offset: number;
+    hora: string;
+    mismoDia: boolean;
+    estado?: "COMPLETADA";
+  }[] = [
+    { nombre: "María Rodríguez", servicio: "remocion-de-oxido", offset: 2, hora: "09:00", mismoDia: false },
+    { nombre: "Carlos Jiménez", servicio: "remocion-de-grafiti", offset: 4, hora: "14:30", mismoDia: true },
+    { nombre: "Instituto Nacional de Seguros", servicio: "restauracion-patrimonial", offset: 9, hora: "10:00", mismoDia: false },
+    { nombre: "Taller Vindas", servicio: "remocion-de-grasa-y-aceite", offset: 1, hora: "08:00", mismoDia: false },
+    // Cita pasada (para probar la encuesta de satisfacción).
+    { nombre: "Condominio Vista Real", servicio: "remocion-de-moho-y-biofilm", offset: -3, hora: "11:00", mismoDia: false, estado: "COMPLETADA" },
   ];
 
   for (const e of ejemplos) {
@@ -46,10 +55,12 @@ void (async () => {
         servicio: e.servicio,
         fechaHora: crWallToUtc(dia(e.offset), e.hora),
         diasRecordatorio: 2,
+        recordatorioMismoDia: e.mismoDia,
+        estado: e.estado ?? "AGENDADA",
         creadaPor: { connect: { id: admin.id } },
       },
     });
-    await notificarConfirmacion(cita.id);
+    if (e.offset >= 0) await notificarConfirmacion(cita.id);
     console.log(`✔ Cita de ejemplo: ${e.nombre} (${dia(e.offset)} ${e.hora})`);
   }
 
