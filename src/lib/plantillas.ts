@@ -32,30 +32,56 @@ export function whatsappParams(d: DatosMensaje): string[] {
 }
 
 // ── Email ───────────────────────────────────────────────────────────────────
+// Plantilla base compartida por todos los correos: logo real de la marca,
+// franja del color de marca, y una tarjeta blanca con sombra suave. El logo
+// se sirve desde el propio sitio (${NEXT_PUBLIC_APP_URL}/logo-full.png), así
+// que hace falta que esa variable apunte al dominio público en producción
+// para que el logo se vea en la bandeja de entrada del cliente.
+
+const MARCA = "#eb533c";
+const logoUrl = () => `${env.NEXT_PUBLIC_APP_URL}/logo-full.png`;
 
 function layout(titulo: string, cuerpoHtml: string): string {
   return `<!doctype html>
 <html lang="es">
+<head><meta name="color-scheme" content="light"><meta name="supported-color-schemes" content="light"></head>
 <body style="margin:0;background:#f4f4f5;font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#18181b;">
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f5;padding:24px 0;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f5;padding:40px 16px;">
     <tr><td align="center">
-      <table role="presentation" width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;border:1px solid #e4e4e7;">
-        <tr><td style="background:#0f172a;padding:20px 28px;">
-          <span style="color:#ffffff;font-size:16px;font-weight:600;letter-spacing:0.02em;">Restauración Láser</span>
+      <table role="presentation" width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;background:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #e4e4e7;box-shadow:0 1px 3px rgba(0,0,0,0.06);">
+        <tr><td style="height:4px;line-height:4px;font-size:0;background:${MARCA};">&nbsp;</td></tr>
+        <tr><td style="padding:36px 40px 16px;text-align:center;">
+          <img src="${logoUrl()}" width="150" alt="Restauración Láser"
+               style="display:block;margin:0 auto;width:150px;max-width:55%;height:auto;border:0;outline:none;">
         </td></tr>
-        <tr><td style="padding:28px;">
-          <h1 style="margin:0 0 16px;font-size:18px;font-weight:600;">${titulo}</h1>
-          ${cuerpoHtml}
+        <tr><td style="padding:12px 40px 8px;">
+          <h1 style="margin:0 0 20px;font-size:21px;line-height:1.3;font-weight:800;color:#18181b;text-align:center;">${titulo}</h1>
+          <div style="font-size:15px;line-height:1.65;color:#3f3f46;">
+            ${cuerpoHtml}
+          </div>
         </td></tr>
-        <tr><td style="padding:20px 28px;border-top:1px solid #e4e4e7;color:#71717a;font-size:12px;line-height:1.5;">
-          Restauración Láser · Lindora, Santa Ana, San José, Costa Rica<br>
-          Este mensaje se envió porque coordinaste una cita con nosotros.
+        <tr><td style="padding-top:16px;">&nbsp;</td></tr>
+        <tr><td style="background:#fafaf9;padding:24px 40px;border-top:1px solid #e4e4e7;text-align:center;">
+          <p style="margin:0;color:#71717a;font-size:12px;line-height:1.7;">
+            <strong style="color:#52525b;">Restauración Láser</strong><br>
+            Lindora, Santa Ana, San José, Costa Rica · WhatsApp ${contacto()}<br>
+            Este mensaje se envió porque coordinaste una cita con nosotros.
+          </p>
         </td></tr>
       </table>
     </td></tr>
   </table>
 </body>
 </html>`;
+}
+
+function boton(href: string, texto: string): string {
+  return `<table role="presentation" cellpadding="0" cellspacing="0" style="margin:4px auto 0;">
+    <tr><td style="border-radius:10px;background:${MARCA};">
+      <a href="${href}" style="display:inline-block;padding:13px 26px;font-size:15px;font-weight:700;
+         color:#ffffff;text-decoration:none;border-radius:10px;">${texto}</a>
+    </td></tr>
+  </table>`;
 }
 
 function lineaServicio(servicio?: string | null): string {
@@ -146,15 +172,11 @@ Responder la encuesta: ${d.url}
   const html = layout(
     "¿Cómo te fue?",
     `<p style="margin:0 0 12px;">Hola ${d.nombreCliente},</p>
-     <p style="margin:0 0 16px;">Gracias por confiar en Restauración Láser. Nos ayudaría
+     <p style="margin:0 0 24px;">Gracias por confiar en Restauración Láser. Nos ayudaría
        mucho saber cómo te fue con el servicio — es 1 minuto.</p>
-     <p style="margin:0 0 8px;">
-       <a href="${d.url}" style="display:inline-block;background:#0f172a;color:#fff;
-         text-decoration:none;padding:10px 18px;border-radius:8px;font-weight:600;">
-         Responder la encuesta</a>
-     </p>
-     <p style="margin:12px 0 0;color:#71717a;font-size:12px;">Si el botón no funciona,
-       copiá este enlace: ${d.url}</p>`,
+     ${boton(d.url, "Responder la encuesta")}
+     <p style="margin:24px 0 0;color:#a1a1aa;font-size:12px;text-align:center;">Si el botón no
+       funciona, copiá este enlace:<br>${d.url}</p>`,
   );
   return { subject, text, html };
 }
@@ -223,8 +245,8 @@ Revisá la cita: ${url}`;
     "Falló un envío automático",
     `<p style="margin:0 0 12px;">No se pudo enviar el mensaje de <strong>${args.tipo}</strong>
        por <strong>${args.canal}</strong> al cliente <strong>${args.cliente}</strong>.</p>
-     <p style="margin:0 0 12px;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:10px;color:#991b1b;font-family:monospace;font-size:13px;">${args.error}</p>
-     <p style="margin:0;"><a href="${url}" style="color:#0f172a;">Abrir la cita en el panel →</a></p>`,
+     <p style="margin:0 0 20px;background:#fef2f2;border:1px solid #fecaca;border-radius:10px;padding:12px 14px;color:#991b1b;font-family:ui-monospace,monospace;font-size:13px;">${args.error}</p>
+     ${boton(url, "Abrir la cita en el panel")}`,
   );
   return { subject, text, html };
 }
@@ -239,14 +261,17 @@ export function emailNuevaSolicitud(args: { nombre: string; email: string; rol: 
 Entrá a Equipo para aprobarlo o rechazarlo: ${url}`;
   const html = layout(
     "Nueva solicitud de acceso",
-    `<p style="margin:0 0 12px;"><strong>${args.nombre}</strong> (${args.email}) pidió acceso al
-       panel de Restauración Láser como <strong>${rolTxt}</strong>.</p>
-     <p style="margin:0 0 16px;">Nadie entra sin que un administrador lo apruebe primero.</p>
-     <p style="margin:0 0 8px;">
-       <a href="${url}" style="display:inline-block;background:#0f172a;color:#fff;
-         text-decoration:none;padding:10px 18px;border-radius:8px;font-weight:600;">
-         Revisar en Equipo</a>
-     </p>`,
+    `<p style="margin:0 0 8px;text-align:center;">
+       <strong style="font-size:16px;">${args.nombre}</strong><br>
+       <span style="color:#71717a;">${args.email}</span>
+     </p>
+     <p style="margin:0 0 24px;text-align:center;">
+       Pidió acceso al panel como
+       <span style="display:inline-block;padding:2px 10px;border-radius:999px;background:#fdece7;color:${MARCA};font-weight:700;font-size:13px;">${rolTxt}</span>
+     </p>
+     <p style="margin:0 0 24px;color:#71717a;text-align:center;">Nadie entra sin que un
+       administrador lo apruebe primero.</p>
+     ${boton(url, "Revisar en Equipo")}`,
   );
   return { subject, text, html };
 }
