@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { requireUsuario } from "@/lib/auth";
+import { requireRol } from "@/lib/auth";
 import { resumenEncuestas } from "@/lib/panel-data";
 import { formatFechaCorta } from "@/lib/timezone";
 import { nombreServicio } from "@/lib/servicios";
@@ -16,7 +16,7 @@ function Estrellas({ n }: { n: number }) {
 }
 
 export default async function EncuestasPage() {
-  await requireUsuario();
+  await requireRol("ADMIN");
   const r = await resumenEncuestas();
 
   return (

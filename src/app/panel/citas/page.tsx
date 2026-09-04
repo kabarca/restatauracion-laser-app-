@@ -14,11 +14,12 @@ export const dynamic = "force-dynamic";
 type SearchParams = Promise<Record<string, string | undefined>>;
 
 export default async function CitasPage({ searchParams }: { searchParams: SearchParams }) {
-  await requireUsuario();
+  const usuario = await requireUsuario();
+  const esAdmin = usuario.rol === "ADMIN";
   const sp = await searchParams;
   const vista = sp.vista === "calendario" ? "calendario" : "lista";
 
-  const acciones = (
+  const acciones = esAdmin && (
     <div className="flex gap-2">
       <Link className="btn-primario" href="/panel/citas/nueva">
         Nueva cita
@@ -91,9 +92,11 @@ export default async function CitasPage({ searchParams }: { searchParams: Search
           <a className="btn-secundario" href={`/panel/citas/export${qs ? `?${qs}` : ""}`}>
             Exportar CSV
           </a>
-          <Link className="btn-primario" href="/panel/citas/nueva">
-            Nueva cita
-          </Link>
+          {esAdmin && (
+            <Link className="btn-primario" href="/panel/citas/nueva">
+              Nueva cita
+            </Link>
+          )}
         </div>
       </div>
 

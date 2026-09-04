@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-import { requireUsuario } from "@/lib/auth";
+import { requireRol } from "@/lib/auth";
 import { env } from "@/lib/env";
 import { citaFormSchema, reprogramarSchema } from "@/lib/validation";
 import {
@@ -24,7 +24,7 @@ function fieldErrors(e: z.ZodError): Record<string, string[]> {
 
 /** Flujo A + B: crea la cita y dispara confirmación inmediata (WhatsApp + email). */
 export async function crearCita(_prev: FormState, formData: FormData): Promise<FormState> {
-  const usuario = await requireUsuario();
+  const usuario = await requireRol("ADMIN");
 
   const raw = Object.fromEntries(formData) as Record<string, string>;
   const parsed = citaFormSchema.safeParse(raw);
@@ -67,7 +67,7 @@ export async function reprogramarCita(
   _prev: FormState,
   formData: FormData,
 ): Promise<FormState> {
-  await requireUsuario();
+  await requireRol("ADMIN");
   const parsed = reprogramarSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) return { ok: false, error: "Fecha u hora inválida." };
 
@@ -96,7 +96,7 @@ export async function cancelarCita(
   _prev: FormState,
   formData: FormData,
 ): Promise<FormState> {
-  await requireUsuario();
+  await requireRol("ADMIN");
   const motivo = String(formData.get("motivo") ?? "").trim() || null;
 
   await prisma.cita.update({
@@ -115,38 +115,38 @@ export async function cancelarCita(
 }
 
 export async function marcarEstado(citaId: string, estado: "COMPLETADA" | "AGENDADA") {
-  await requireUsuario();
+  await requireRol("ADMIN");
   await prisma.cita.update({ where: { id: citaId }, data: { estado } });
   revalidatePath("/panel", "layout");
 }
 
 export async function reenviarMensaje(citaId: string, mensajeLogId: string) {
-  await requireUsuario();
+  await requireRol("ADMIN");
   await reintentarMensaje(mensajeLogId);
   revalidatePath("/panel", "layout");
 }
 
 export async function reenviarConfirmacion(citaId: string) {
-  await requireUsuario();
+  await requireRol("ADMIN");
   await notificarConfirmacion(citaId);
   revalidatePath("/panel", "layout");
 }
 
 export async function reintentarFallidos() {
-  await requireUsuario();
+  await requireRol("ADMIN");
   const resumen = await reintentarTodosLosFallidos();
   revalidatePath("/panel", "layout");
   return resumen;
 }
 
 export async function alternarRecordatorioMismoDia(citaId: string, valor: boolean) {
-  await requireUsuario();
+  await requireRol("ADMIN");
   await prisma.cita.update({ where: { id: citaId }, data: { recordatorioMismoDia: valor } });
   revalidatePath("/panel", "layout");
 }
 
 export async function enviarEncuesta(citaId: string) {
-  await requireUsuario();
+  await requireRol("ADMIN");
   await notificarEncuesta(citaId);
   revalidatePath("/panel", "layout");
 }

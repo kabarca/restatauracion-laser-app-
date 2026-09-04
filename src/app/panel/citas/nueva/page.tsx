@@ -1,4 +1,4 @@
-import { requireUsuario } from "@/lib/auth";
+import { requireRol } from "@/lib/auth";
 import { env } from "@/lib/env";
 import { getAjustes } from "@/lib/ajustes";
 import { CitaForm } from "@/components/cita-form";
@@ -10,7 +10,7 @@ export default async function NuevaCitaPage({
 }: {
   searchParams: Promise<{ fecha?: string }>;
 }) {
-  await requireUsuario();
+  await requireRol("ADMIN");
   const a = await getAjustes();
   const dias = Number(a.diasRecordatorioDefault) || env.RECORDATORIO_DIAS_DEFAULT;
   const { fecha } = await searchParams;

@@ -15,18 +15,20 @@ export function Nav({ esAdmin }: { esAdmin: boolean }) {
         p === "/panel/citas" ||
         (p.startsWith("/panel/citas/") && !p.startsWith("/panel/citas/nueva")),
     },
-    {
-      href: "/panel/citas/nueva",
-      label: "Nueva cita",
-      match: (p: string) => p.startsWith("/panel/citas/nueva"),
-    },
-    {
-      href: "/panel/encuestas",
-      label: "Encuestas",
-      match: (p: string) => p.startsWith("/panel/encuestas"),
-    },
+    // Nueva cita / Encuestas / Equipo / Ajustes son acciones de administración
+    // — Staff solo puede ver las citas agendadas.
     ...(esAdmin
       ? [
+          {
+            href: "/panel/citas/nueva",
+            label: "Nueva cita",
+            match: (p: string) => p.startsWith("/panel/citas/nueva"),
+          },
+          {
+            href: "/panel/encuestas",
+            label: "Encuestas",
+            match: (p: string) => p.startsWith("/panel/encuestas"),
+          },
           {
             href: "/panel/usuarios",
             label: "Equipo",

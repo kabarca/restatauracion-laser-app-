@@ -40,6 +40,7 @@ function Stat({
 
 export default async function TableroPage() {
   const usuario = await requireUsuario();
+  const esAdmin = usuario.rol === "ADMIN";
   const r = await resumenTablero();
 
   return (
@@ -49,9 +50,11 @@ export default async function TableroPage() {
           <h1 className="text-xl font-semibold text-zinc-900">Hola, {usuario.nombre.split(" ")[0]}</h1>
           <p className="text-sm text-zinc-500">Resumen de citas y envíos</p>
         </div>
-        <Link className="btn-primario" href="/panel/citas/nueva">
-          Nueva cita
-        </Link>
+        {esAdmin && (
+          <Link className="btn-primario" href="/panel/citas/nueva">
+            Nueva cita
+          </Link>
+        )}
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -177,7 +180,7 @@ export default async function TableroPage() {
                 </tbody>
               </table>
             </div>
-            <ReintentarFallidos cantidad={r.fallidos.length} />
+            {esAdmin && <ReintentarFallidos cantidad={r.fallidos.length} />}
           </>
         )}
       </section>

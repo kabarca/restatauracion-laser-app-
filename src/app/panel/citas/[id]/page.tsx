@@ -28,7 +28,8 @@ export default async function CitaDetallePage({
   params: Promise<{ id: string }>;
   searchParams: Promise<{ creada?: string }>;
 }) {
-  await requireUsuario();
+  const usuario = await requireUsuario();
+  const esAdmin = usuario.rol === "ADMIN";
   const { id } = await params;
   const { creada } = await searchParams;
 
@@ -122,17 +123,19 @@ export default async function CitaDetallePage({
         </div>
       </div>
 
-      <div className="tarjeta">
-        <h2 className="mb-3 font-semibold text-zinc-900">Acciones</h2>
-        <AccionesCita
-          citaId={cita.id}
-          estado={cita.estado}
-          fechaDefault={wall.fecha}
-          horaDefault={wall.hora}
-          recordatorioMismoDia={cita.recordatorioMismoDia}
-          tieneEncuesta={cita.encuesta != null}
-        />
-      </div>
+      {esAdmin && (
+        <div className="tarjeta">
+          <h2 className="mb-3 font-semibold text-zinc-900">Acciones</h2>
+          <AccionesCita
+            citaId={cita.id}
+            estado={cita.estado}
+            fechaDefault={wall.fecha}
+            horaDefault={wall.hora}
+            recordatorioMismoDia={cita.recordatorioMismoDia}
+            tieneEncuesta={cita.encuesta != null}
+          />
+        </div>
+      )}
 
       {cita.encuesta && (
         <div className="tarjeta space-y-1 text-sm">
@@ -157,9 +160,11 @@ export default async function CitaDetallePage({
           ) : (
             <>
               <p className="text-zinc-500">Sin responder todavía.</p>
-              <p className="break-all text-xs text-zinc-400">
-                Enlace: {env.NEXT_PUBLIC_APP_URL}/encuesta/{cita.encuesta.token}
-              </p>
+              {esAdmin && (
+                <p className="break-all text-xs text-zinc-400">
+                  Enlace: {env.NEXT_PUBLIC_APP_URL}/encuesta/{cita.encuesta.token}
+                </p>
+              )}
             </>
           )}
         </div>
@@ -196,7 +201,7 @@ export default async function CitaDetallePage({
                       {m.error && <div className="text-xs text-red-500">{m.error}</div>}
                     </td>
                     <td className="py-2 pr-4">
-                      {m.estado === "FALLIDO" && (
+                      {esAdmin && m.estado === "FALLIDO" && (
                         <ReintentarMensaje citaId={cita.id} mensajeLogId={m.id} />
                       )}
                     </td>

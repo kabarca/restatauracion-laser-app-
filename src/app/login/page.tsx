@@ -71,6 +71,13 @@ function LoginForm() {
       <button type="submit" className="btn-primario w-full" disabled={cargando}>
         {cargando ? "Ingresando…" : "Ingresar"}
       </button>
+
+      <p className="text-center text-sm text-zinc-500">
+        ¿Sos nuevo en el equipo?{" "}
+        <a href="/registro" className="font-medium text-marca hover:underline">
+          Creá tu cuenta
+        </a>
+      </p>
     </form>
   );
 }

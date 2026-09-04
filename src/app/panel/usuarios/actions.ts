@@ -66,3 +66,26 @@ export async function cambiarRol(usuarioId: string, rol: "ADMIN" | "STAFF") {
   await prisma.usuario.update({ where: { id: usuarioId }, data: { rol } });
   revalidatePath("/panel/usuarios");
 }
+
+/** Aprueba una solicitud de autorregistro (/registro) — le da acceso real. */
+export async function aprobarUsuario(usuarioId: string) {
+  await requireRol("ADMIN");
+  await prisma.usuario.update({ where: { id: usuarioId }, data: { aprobado: true } });
+  revalidatePath("/panel/usuarios");
+}
+
+/** Rechaza una solicitud: borra el perfil y la cuenta de Supabase Auth. */
+export async function rechazarUsuario(usuarioId: string) {
+  await requireRol("ADMIN");
+  const usuario = await prisma.usuario.findUnique({ where: { id: usuarioId } });
+  if (!usuario || usuario.aprobado) return; // solo aplica a solicitudes pendientes
+
+  await prisma.usuario.delete({ where: { id: usuarioId } });
+  await createSupabaseAdminClient()
+    .auth.admin.deleteUser(usuario.authUserId)
+    .catch(() => {
+      // Si falla borrar la cuenta de Auth, el perfil igual ya no existe —
+      // no puede entrar al panel de todos modos.
+    });
+  revalidatePath("/panel/usuarios");
+}

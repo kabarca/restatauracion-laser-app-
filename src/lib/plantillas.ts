@@ -228,3 +228,25 @@ Revisá la cita: ${url}`;
   );
   return { subject, text, html };
 }
+
+// ── Nueva solicitud de acceso (autorregistro en /registro) ─────────────────
+export function emailNuevaSolicitud(args: { nombre: string; email: string; rol: string }) {
+  const url = `${env.NEXT_PUBLIC_APP_URL}/panel/usuarios`;
+  const rolTxt = args.rol === "ADMIN" ? "Administrador" : "Staff";
+  const subject = `Nueva solicitud de acceso: ${args.nombre} (${rolTxt})`;
+  const text = `${args.nombre} (${args.email}) pidió acceso al panel de Restauración Láser como ${rolTxt}.
+
+Entrá a Equipo para aprobarlo o rechazarlo: ${url}`;
+  const html = layout(
+    "Nueva solicitud de acceso",
+    `<p style="margin:0 0 12px;"><strong>${args.nombre}</strong> (${args.email}) pidió acceso al
+       panel de Restauración Láser como <strong>${rolTxt}</strong>.</p>
+     <p style="margin:0 0 16px;">Nadie entra sin que un administrador lo apruebe primero.</p>
+     <p style="margin:0 0 8px;">
+       <a href="${url}" style="display:inline-block;background:#0f172a;color:#fff;
+         text-decoration:none;padding:10px 18px;border-radius:8px;font-weight:600;">
+         Revisar en Equipo</a>
+     </p>`,
+  );
+  return { subject, text, html };
+}
