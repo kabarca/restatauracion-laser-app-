@@ -37,10 +37,11 @@ void (async () => {
     offset: number;
     hora: string;
     mismoDia: boolean;
+    ubicacionUrl?: string;
     estado?: "COMPLETADA";
   }[] = [
-    { nombre: "María Rodríguez", servicio: "remocion-de-oxido", offset: 2, hora: "09:00", mismoDia: false },
-    { nombre: "Carlos Jiménez", servicio: "remocion-de-grafiti", offset: 4, hora: "14:30", mismoDia: true },
+    { nombre: "María Rodríguez", servicio: "remocion-de-oxido", offset: 2, hora: "09:00", mismoDia: false, ubicacionUrl: "https://waze.com/ul/hd1u0scq3g" },
+    { nombre: "Carlos Jiménez", servicio: "remocion-de-grafiti", offset: 4, hora: "14:30", mismoDia: true, ubicacionUrl: "https://maps.google.com/?q=9.9403,-84.1533" },
     { nombre: "Instituto Nacional de Seguros", servicio: "restauracion-patrimonial", offset: 9, hora: "10:00", mismoDia: false },
     { nombre: "Taller Vindas", servicio: "remocion-de-grasa-y-aceite", offset: 1, hora: "08:00", mismoDia: false },
     // Cita pasada (para probar la encuesta de satisfacción).
@@ -54,6 +55,7 @@ void (async () => {
           create: { nombre: e.nombre, email: EMAIL_PRUEBA, telefono: TEL_PRUEBA },
         },
         servicio: e.servicio,
+        ubicacionUrl: e.ubicacionUrl,
         fechaHora: crWallToUtc(dia(e.offset), e.hora),
         diasRecordatorio: 2,
         recordatorioMismoDia: e.mismoDia,

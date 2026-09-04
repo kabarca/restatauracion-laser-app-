@@ -52,7 +52,7 @@ export async function GET(req: NextRequest) {
     "Días recordatorio",
     "Confirmación enviada",
     "Recordatorio enviado",
-    "Nota",
+    "Ubicación (link)",
     "Creada por",
   ];
 
@@ -68,7 +68,7 @@ export async function GET(req: NextRequest) {
       String(c.diasRecordatorio),
       c.confirmacionEnviadaEn ? c.confirmacionEnviadaEn.toISOString() : "",
       c.recordatorioEnviadoEn ? c.recordatorioEnviadoEn.toISOString() : "",
-      c.nota ?? "",
+      c.ubicacionUrl ?? "",
       c.creadaPor.nombre,
     ]
       .map(csvCell)

@@ -100,9 +100,17 @@ export default async function CitaDetallePage({
               ? `enviada ${formatFechaCorta(cita.confirmacionEnviadaEn)}`
               : "pendiente"}
           </p>
-          {cita.nota && (
+          {cita.ubicacionUrl && (
             <p>
-              <span className="text-zinc-500">Nota:</span> {cita.nota}
+              <span className="text-zinc-500">Ubicación:</span>{" "}
+              <a
+                href={cita.ubicacionUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="font-medium text-zinc-900 underline hover:no-underline"
+              >
+                Abrir en el mapa ↗
+              </a>
             </p>
           )}
           {cita.motivoCancelacion && (

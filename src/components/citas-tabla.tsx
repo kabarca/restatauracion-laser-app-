@@ -52,7 +52,20 @@ export function CitasTabla({
                 <div className="text-zinc-900">{c.cliente.nombre}</div>
                 <div className="text-xs text-zinc-400">{c.cliente.telefono}</div>
               </td>
-              <td className="px-4 py-3 text-zinc-600">{nombreServicio(c.servicio) ?? "—"}</td>
+              <td className="px-4 py-3 text-zinc-600">
+                {nombreServicio(c.servicio) ?? "—"}
+                {c.ubicacionUrl && (
+                  <a
+                    href={c.ubicacionUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    title="Abrir ubicación en el mapa"
+                    className="ml-2 text-zinc-400 hover:text-zinc-900"
+                  >
+                    📍
+                  </a>
+                )}
+              </td>
               <td className="px-4 py-3">
                 <EstadoCitaBadge estado={c.estado} />
               </td>

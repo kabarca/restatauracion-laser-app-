@@ -31,7 +31,13 @@ export const citaFormSchema = z
       .optional()
       .transform((v) => (v ? v : undefined))
       .refine((v) => v === undefined || SERVICIO_SLUGS.includes(v as never), "Servicio inválido"),
-    nota: z.string().trim().max(1000).optional().or(z.literal("")),
+    ubicacionUrl: z
+      .string()
+      .trim()
+      .max(500)
+      .url("Pegá un link válido (Waze, Google Maps…)")
+      .optional()
+      .or(z.literal("")),
     diasRecordatorio: z.coerce.number().int().min(0).max(30).optional(),
     recordatorioMismoDia: z
       .union([z.literal("on"), z.literal("true"), z.literal("")])
@@ -78,7 +84,7 @@ export const citaFormSchema = z
       telefonoE164,
       fechaHora,
       servicio: data.servicio,
-      nota: data.nota ? data.nota : undefined,
+      ubicacionUrl: data.ubicacionUrl ? data.ubicacionUrl : undefined,
       diasRecordatorio: data.diasRecordatorio,
       recordatorioMismoDia: data.recordatorioMismoDia,
     };

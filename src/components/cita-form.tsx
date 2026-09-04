@@ -150,10 +150,21 @@ export function CitaForm({
         </label>
 
         <div>
-          <label className="etiqueta" htmlFor="nota">
-            Nota interna (opcional)
+          <label className="etiqueta" htmlFor="ubicacionUrl">
+            Link de ubicación — Waze / Google Maps (opcional)
           </label>
-          <textarea id="nota" name="nota" rows={3} className="campo" />
+          <input
+            id="ubicacionUrl"
+            name="ubicacionUrl"
+            type="url"
+            inputMode="url"
+            placeholder="https://waze.com/ul/..."
+            className="campo"
+          />
+          <p className="mt-1 text-xs text-zinc-400">
+            Uso interno: para que el equipo sepa a dónde ir. No se le envía al cliente.
+          </p>
+          {fe.ubicacionUrl && <p className="mt-1 text-sm text-red-600">{fe.ubicacionUrl[0]}</p>}
         </div>
       </section>
 

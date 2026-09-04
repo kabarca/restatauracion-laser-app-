@@ -80,9 +80,9 @@ model Cita {
   id        String     @id @default(cuid())
   cliente   Cliente    @relation(fields: [clienteId], references: [id])
   clienteId String
-  servicio  String? // slug de una de las 9 líneas de servicio, opcional
-  nota      String?
-  fechaHora DateTime // guardada en UTC
+  servicio     String? // slug de una de las 9 líneas de servicio, opcional
+  ubicacionUrl String? // link de Waze / Google Maps al lugar de la cita (uso interno)
+  fechaHora    DateTime // guardada en UTC
   estado    EstadoCita @default(AGENDADA)
 
   creadaPor   Usuario @relation("CitaCreadaPor", fields: [creadaPorId], references: [id])

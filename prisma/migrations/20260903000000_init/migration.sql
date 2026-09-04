@@ -47,7 +47,7 @@ CREATE TABLE "citas" (
     "id" TEXT NOT NULL,
     "clienteId" TEXT NOT NULL,
     "servicio" TEXT,
-    "nota" TEXT,
+    "ubicacionUrl" TEXT,
     "fechaHora" TIMESTAMP(3) NOT NULL,
     "estado" "EstadoCita" NOT NULL DEFAULT 'AGENDADA',
     "creadaPorId" TEXT NOT NULL,

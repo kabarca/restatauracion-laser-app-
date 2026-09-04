@@ -43,7 +43,7 @@ export async function crearCita(_prev: FormState, formData: FormData): Promise<F
         },
       },
       servicio: d.servicio,
-      nota: d.nota,
+      ubicacionUrl: d.ubicacionUrl,
       fechaHora: d.fechaHora,
       diasRecordatorio: d.diasRecordatorio ?? env.RECORDATORIO_DIAS_DEFAULT,
       recordatorioMismoDia: d.recordatorioMismoDia,
