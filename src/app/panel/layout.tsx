@@ -1,3 +1,5 @@
+import Image from "next/image";
+import Link from "next/link";
 import { requireUsuario } from "@/lib/auth";
 import { Nav } from "@/components/nav";
 import { CerrarSesion } from "@/components/cerrar-sesion";
@@ -11,7 +13,10 @@ export default async function PanelLayout({ children }: { children: React.ReactN
       <header className="border-b border-zinc-200 bg-white">
         <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-3 px-4 py-3">
           <div className="flex items-center gap-6">
-            <span className="font-semibold text-zinc-900">Restauración Láser</span>
+            <Link href="/panel" className="flex items-center gap-2" aria-label="Restauración Láser — Inicio">
+              <Image src="/logo-shape.png" alt="" width={28} height={28} className="h-7 w-auto" priority />
+              <span className="hidden font-semibold text-zinc-900 sm:inline">Restauración Láser</span>
+            </Link>
             <Nav esAdmin={usuario.rol === "ADMIN"} />
           </div>
           <div className="flex items-center gap-3 text-sm text-zinc-500">

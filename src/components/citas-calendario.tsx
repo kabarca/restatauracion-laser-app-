@@ -115,7 +115,7 @@ export function CitasCalendario({
                       className={cn(
                         "flex h-6 w-6 items-center justify-center rounded-full text-xs",
                         dia.hoy
-                          ? "bg-zinc-900 font-semibold text-white"
+                          ? "bg-marca font-semibold text-white"
                           : dia.enMes
                             ? "text-zinc-700"
                             : "text-zinc-300",

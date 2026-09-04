@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
@@ -28,9 +29,10 @@ function LoginForm() {
   }
 
   return (
-    <form onSubmit={onSubmit} className="tarjeta w-full max-w-sm space-y-4">
-      <div>
-        <h1 className="text-lg font-semibold text-zinc-900">Restauración Láser</h1>
+    <form onSubmit={onSubmit} className="tarjeta w-full max-w-sm space-y-5">
+      <div className="flex flex-col items-center gap-3 text-center">
+        <h1 className="sr-only">Restauración Láser</h1>
+        <Image src="/logo-full.png" alt="Restauración Láser" width={160} height={88} priority className="h-14 w-auto" />
         <p className="text-sm text-zinc-500">Panel de recordatorios de citas</p>
       </div>
 

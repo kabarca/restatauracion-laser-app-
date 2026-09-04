@@ -51,7 +51,7 @@ export function Nav({ esAdmin }: { esAdmin: boolean }) {
             href={l.href}
             className={cn(
               "rounded-lg px-3 py-1.5 text-sm font-medium transition",
-              activo ? "bg-zinc-900 text-white" : "text-zinc-600 hover:bg-zinc-100",
+              activo ? "bg-marca text-white" : "text-zinc-600 hover:bg-zinc-100",
             )}
           >
             {l.label}

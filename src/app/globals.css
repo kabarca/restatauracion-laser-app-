@@ -1,7 +1,11 @@
 @import "tailwindcss";
 
 @theme {
-  --color-marca: #0f172a;
+  /* Color de marca (Restauración Láser) — mismo coral del logo. */
+  --color-marca: #eb533c;
+  --color-marca-hover: #d6432d;
+  --color-marca-suave: #fdece7;
+  --color-marca-borde: #f6c3b4;
   --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
     Arial, sans-serif;
 }
@@ -16,6 +20,10 @@ body {
   font-family: var(--font-sans);
 }
 
+input[type="checkbox"] {
+  accent-color: var(--color-marca);
+}
+
 @layer components {
   .campo {
     width: 100%;
@@ -28,8 +36,8 @@ body {
     outline: none;
   }
   .campo:focus {
-    border-color: #18181b;
-    box-shadow: 0 0 0 2px rgba(24, 24, 27, 0.1);
+    border-color: var(--color-marca);
+    box-shadow: 0 0 0 2px var(--color-marca-suave);
   }
   .campo:disabled {
     opacity: 0.6;
@@ -65,12 +73,14 @@ body {
   }
 
   .btn-primario {
-    background: #18181b;
+    background: var(--color-marca);
     color: #fff;
-    border: 1px solid #18181b;
+    border: 1px solid var(--color-marca);
+    box-shadow: 0 1px 2px 0 rgba(235, 83, 60, 0.25);
   }
   .btn-primario:hover {
-    background: #27272a;
+    background: var(--color-marca-hover);
+    border-color: var(--color-marca-hover);
   }
 
   .btn-secundario {
@@ -92,10 +102,10 @@ body {
   }
 
   .tarjeta {
-    border-radius: 0.75rem;
+    border-radius: 1rem;
     border: 1px solid #e4e4e7;
     background: #fff;
     padding: 1.25rem;
-    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04);
   }
 }

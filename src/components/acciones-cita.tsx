@@ -12,6 +12,8 @@ import {
   enviarEncuesta,
   type FormState,
 } from "@/app/panel/citas/actions";
+import { DatePicker } from "@/components/date-picker";
+import { TimePicker } from "@/components/time-picker";
 import type { EstadoCita } from "@/generated/prisma";
 
 function Boton({ children, className = "btn-secundario" }: { children: React.ReactNode; className?: string }) {
@@ -39,6 +41,8 @@ export function AccionesCita({
   tieneEncuesta: boolean;
 }) {
   const [abrir, setAbrir] = useState<"reprogramar" | "cancelar" | null>(null);
+  const [fecha, setFecha] = useState(fechaDefault);
+  const [hora, setHora] = useState(horaDefault);
   const [repState, repAction] = useActionState<FormState, FormData>(
     reprogramarCita.bind(null, citaId),
     { ok: false },
@@ -96,9 +100,13 @@ export function AccionesCita({
       {abrir === "reprogramar" && (
         <form action={repAction} className="tarjeta space-y-3">
           <p className="text-sm font-medium text-zinc-900">Nueva fecha y hora</p>
-          <div className="flex flex-wrap gap-3">
-            <input type="date" name="fecha" required defaultValue={fechaDefault} className="campo max-w-44" />
-            <input type="time" name="hora" required defaultValue={horaDefault} step={300} className="campo max-w-32" />
+          <div className="flex flex-wrap items-start gap-3">
+            <div className="w-48">
+              <DatePicker name="fecha" value={fecha} onChange={setFecha} />
+            </div>
+            <div className="w-36">
+              <TimePicker name="hora" value={hora} onChange={setHora} />
+            </div>
             <Boton className="btn-primario">Guardar y avisar</Boton>
           </div>
           {repState.error && <p className="text-sm text-red-600">{repState.error}</p>}

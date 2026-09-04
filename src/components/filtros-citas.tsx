@@ -2,6 +2,7 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback } from "react";
+import { DatePicker } from "@/components/date-picker";
 
 const ESTADOS = ["", "AGENDADA", "RECORDADA", "COMPLETADA", "CANCELADA"];
 
@@ -49,22 +50,20 @@ export function FiltrosCitas() {
           ))}
         </select>
       </div>
-      <div>
+      <div className="w-40">
         <label className="etiqueta">Desde</label>
-        <input
-          type="date"
-          className="campo"
-          defaultValue={params.get("desde") ?? ""}
-          onChange={(e) => set({ desde: e.target.value })}
+        <DatePicker
+          value={params.get("desde") ?? ""}
+          onChange={(v) => set({ desde: v })}
+          placeholder="Cualquiera"
         />
       </div>
-      <div>
+      <div className="w-40">
         <label className="etiqueta">Hasta</label>
-        <input
-          type="date"
-          className="campo"
-          defaultValue={params.get("hasta") ?? ""}
-          onChange={(e) => set({ hasta: e.target.value })}
+        <DatePicker
+          value={params.get("hasta") ?? ""}
+          onChange={(v) => set({ hasta: v })}
+          placeholder="Cualquiera"
         />
       </div>
       {[...params.keys()].length > 0 && (

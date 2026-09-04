@@ -6,6 +6,8 @@ import { crearCita, type FormState } from "@/app/panel/citas/actions";
 import { SERVICIOS } from "@/lib/servicios";
 import { TelefonoInput } from "@/components/telefono-input";
 import { PreviewMensajes } from "@/components/preview-mensajes";
+import { DatePicker } from "@/components/date-picker";
+import { TimePicker } from "@/components/time-picker";
 
 function Enviar() {
   const { pending } = useFormStatus();
@@ -76,32 +78,14 @@ export function CitaForm({
             <label className="etiqueta" htmlFor="fecha">
               Fecha
             </label>
-            <input
-              id="fecha"
-              name="fecha"
-              type="date"
-              required
-              min={hoy()}
-              value={fecha}
-              onChange={(e) => setFecha(e.target.value)}
-              className="campo"
-            />
+            <DatePicker id="fecha" name="fecha" value={fecha} onChange={setFecha} min={hoy()} />
             {fe.fecha && <p className="mt-1 text-sm text-red-600">{fe.fecha[0]}</p>}
           </div>
           <div>
             <label className="etiqueta" htmlFor="hora">
               Hora
             </label>
-            <input
-              id="hora"
-              name="hora"
-              type="time"
-              required
-              value={hora}
-              onChange={(e) => setHora(e.target.value)}
-              step={300}
-              className="campo"
-            />
+            <TimePicker id="hora" name="hora" value={hora} onChange={setHora} />
             {fe.hora && <p className="mt-1 text-sm text-red-600">{fe.hora[0]}</p>}
           </div>
         </div>
