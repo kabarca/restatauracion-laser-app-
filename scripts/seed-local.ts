@@ -26,6 +26,11 @@ void (async () => {
 
   const dia = (n: number) => utcToCrWall(new Date(Date.now() + n * 86400000)).fecha;
 
+  // Datos de contacto de PRUEBA: todo apunta a un mismo número + correo para que,
+  // al conectar WhatsApp/Resend, los mensajes lleguen a un solo lado.
+  const TEL_PRUEBA = process.env.TEL_PRUEBA || "+50673001338";
+  const EMAIL_PRUEBA = process.env.EMAIL_PRUEBA || "sanchezthomas023@gmail.com";
+
   const ejemplos: {
     nombre: string;
     servicio: string;
@@ -46,11 +51,7 @@ void (async () => {
     const cita = await prisma.cita.create({
       data: {
         cliente: {
-          create: {
-            nombre: e.nombre,
-            email: `${e.nombre.toLowerCase().replace(/[^a-z]+/g, ".")}@ejemplo.com`,
-            telefono: "+50688990011",
-          },
+          create: { nombre: e.nombre, email: EMAIL_PRUEBA, telefono: TEL_PRUEBA },
         },
         servicio: e.servicio,
         fechaHora: crWallToUtc(dia(e.offset), e.hora),

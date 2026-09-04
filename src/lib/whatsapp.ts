@@ -30,19 +30,24 @@ export async function enviarPlantillaWhatsapp({
   locale,
   bodyParams,
 }: PlantillaParams): Promise<ResultadoEnvio> {
+  // "hello_world" es la plantilla de demo de Meta y no lleva parámetros — útil
+  // para un primer test de conectividad antes de tener plantillas propias.
+  const sinParametros = template === "hello_world" || bodyParams.length === 0;
+
   const payload = {
     messaging_product: "whatsapp",
     to: to.replace(/^\+/, ""),
     type: "template",
     template: {
       name: template,
-      language: { code: locale },
-      components: [
-        {
-          type: "body",
-          parameters: bodyParams.map((text) => ({ type: "text", text })),
-        },
-      ],
+      language: { code: template === "hello_world" ? "en_US" : locale },
+      ...(sinParametros
+        ? {}
+        : {
+            components: [
+              { type: "body", parameters: bodyParams.map((text) => ({ type: "text", text })) },
+            ],
+          }),
     },
   };
 

@@ -10,6 +10,24 @@ npm run local
 Abre **http://localhost:3000** ya logueado como `admin@local`. Todos los envíos
 están en **modo prueba**: se registran en el historial pero no se manda nada real.
 
+Los datos de ejemplo usan el número **+506 7300 1338** y el correo
+**sanchezthomas023@gmail.com** como cliente, así que al conectar credenciales los
+mensajes de prueba llegan a un solo lado.
+
+### Enviar de verdad (opcional)
+
+1. **Correo:** crear una API key en resend.com, ponerla en `RESEND_API_KEY` de
+   `.env.local`. Sin verificar dominio solo se puede enviar al correo dueño de la
+   cuenta de Resend, así que abrí la cuenta con `sanchezthomas023@gmail.com`.
+2. **WhatsApp:** en developers.facebook.com → app → WhatsApp → API Setup, copiar
+   `Phone number ID` y token a `.env.local`, agregar **+506 7300 1338** como
+   destino de prueba, y poner los dos `WHATSAPP_TEMPLATE_*` en `hello_world`.
+3. Probar el envío directo (sin crear cita):
+   ```bash
+   npm run enviar:prueba
+   ```
+   Debe decir `ENVIADO` en vez de `SIMULADO`.
+
 ---
 
 ## 1. Tablero de inicio (`/panel`)

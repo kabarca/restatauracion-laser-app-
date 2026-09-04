@@ -22,7 +22,7 @@ void (async () => {
   const crear = (nombre: string, offsetDias: number, hora: string, extra: Record<string, unknown> = {}) =>
     prisma.cita.create({
       data: {
-        cliente: { create: { nombre, email: `${nombre.toLowerCase()}@x.com`, telefono: "+50688990011" } },
+        cliente: { create: { nombre, email: "sanchezthomas023@gmail.com", telefono: "+50673001338" } },
         fechaHora: crWallToUtc(dia(offsetDias), hora),
         diasRecordatorio: 2,
         creadaPor: { connect: { id: u.id } },
@@ -44,7 +44,7 @@ void (async () => {
       canal: "WHATSAPP",
       tipo: "CONFIRMACION",
       estado: "FALLIDO",
-      destino: "+50688990011",
+      destino: "+50673001338",
       error: "(#132000) Number of parameters does not match",
     },
   });

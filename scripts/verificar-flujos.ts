@@ -25,7 +25,7 @@ void (async () => {
   const en2Dias = utcToCrWall(new Date(Date.now() + 2 * 86400000)).fecha;
   const cita = await prisma.cita.create({
     data: {
-      cliente: { create: { nombre: "María Rodríguez", email: "maria@ejemplo.com", telefono: "+50688990011" } },
+      cliente: { create: { nombre: "María Rodríguez", email: "sanchezthomas023@gmail.com", telefono: "+50673001338" } },
       servicio: "remocion-de-oxido",
       fechaHora: crWallToUtc(en2Dias, "14:30"),
       diasRecordatorio: 2,
