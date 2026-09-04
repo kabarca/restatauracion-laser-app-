@@ -21,15 +21,17 @@ const hoy = () => new Date(Date.now() - 6 * 3600 * 1000).toISOString().slice(0, 
 export function CitaForm({
   diasRecordatorioDefault,
   recordatorioMismoDiaDefault,
+  fechaDefault,
 }: {
   diasRecordatorioDefault: number;
   recordatorioMismoDiaDefault: boolean;
+  fechaDefault?: string;
 }) {
   const [state, formAction] = useActionState<FormState, FormData>(crearCita, { ok: false });
   const fe = state.fieldErrors ?? {};
 
   const [nombre, setNombre] = useState("");
-  const [fecha, setFecha] = useState(hoy());
+  const [fecha, setFecha] = useState(fechaDefault && fechaDefault >= hoy() ? fechaDefault : hoy());
   const [hora, setHora] = useState("09:00");
   const [servicio, setServicio] = useState("");
 

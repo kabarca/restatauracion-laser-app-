@@ -93,3 +93,54 @@ export function rangoDiaCrUtc(diasDesdeHoy: number, ahora = new Date()): { inici
   const fin = new Date(Date.UTC(y, m, d + 1, 0, 0, 0) + CR_OFFSET_MS);
   return { inicio, fin };
 }
+
+// ── Vista de calendario (mes) ────────────────────────────────────────────────
+// Estas funciones trabajan con "YYYY-MM" / "YYYY-MM-DD" como fechas de
+// calendario puras (sin hora) — no hace falta pasar por el offset de CR
+// porque solo arman la grilla; el bucketing real usa utcToCrWall.
+
+/** "YYYY-MM" del mes actual en Costa Rica. */
+export function mesActualCr(ahora = new Date()): string {
+  return utcToCrWall(ahora).fecha.slice(0, 7);
+}
+
+/** "2026-09" + delta meses → "2026-08" / "2026-10" / etc. */
+export function mesRelativo(mes: string, delta: number): string {
+  const [y, m] = mes.split("-").map(Number);
+  const d = new Date(Date.UTC(y, m - 1 + delta, 1));
+  return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}`;
+}
+
+/** "Septiembre de 2026" a partir de "2026-09". */
+export function formatMesLargo(mes: string): string {
+  const [y, m] = mes.split("-").map(Number);
+  const texto = new Intl.DateTimeFormat("es-CR", {
+    month: "long",
+    year: "numeric",
+    timeZone: "UTC",
+  }).format(new Date(Date.UTC(y, m - 1, 1)));
+  return texto.charAt(0).toUpperCase() + texto.slice(1);
+}
+
+/**
+ * Grilla de semanas (lunes a domingo) que cubre el mes "YYYY-MM", con los
+ * días del mes anterior/siguiente necesarios para completar semanas. Recorta
+ * la última fila si es enteramente del mes siguiente.
+ */
+export function grillaMes(mes: string, ahora = new Date()): { fecha: string; enMes: boolean; hoy: boolean }[] {
+  const [y, m] = mes.split("-").map(Number);
+  const primerDia = new Date(Date.UTC(y, m - 1, 1));
+  const diaSemana = (primerDia.getUTCDay() + 6) % 7; // lunes=0 … domingo=6
+  const inicio = new Date(Date.UTC(y, m - 1, 1 - diaSemana));
+  const hoyStr = utcToCrWall(ahora).fecha;
+
+  const dias: { fecha: string; enMes: boolean; hoy: boolean }[] = [];
+  for (let i = 0; i < 42; i++) {
+    const d = new Date(inicio.getTime() + i * 86400000);
+    const fecha = d.toISOString().slice(0, 10);
+    dias.push({ fecha, enMes: d.getUTCMonth() === m - 1, hoy: fecha === hoyStr });
+  }
+  // Si la última semana completa es enteramente del mes siguiente, se recorta.
+  if (dias.slice(35, 42).every((d) => !d.enMes)) dias.length = 35;
+  return dias;
+}

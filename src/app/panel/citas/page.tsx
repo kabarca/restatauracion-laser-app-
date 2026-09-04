@@ -1,9 +1,12 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { requireUsuario } from "@/lib/auth";
-import { crWallToUtc } from "@/lib/timezone";
+import { crWallToUtc, mesActualCr, mesRelativo } from "@/lib/timezone";
 import { FiltrosCitas } from "@/components/filtros-citas";
 import { CitasTabla } from "@/components/citas-tabla";
+import { CitasCalendario } from "@/components/citas-calendario";
+import { VistaToggle } from "@/components/vista-toggle";
+import { EstadoFiltroRapido } from "@/components/estado-filtro-rapido";
 import type { Prisma } from "@/generated/prisma";
 
 export const dynamic = "force-dynamic";
@@ -13,6 +16,44 @@ type SearchParams = Promise<Record<string, string | undefined>>;
 export default async function CitasPage({ searchParams }: { searchParams: SearchParams }) {
   await requireUsuario();
   const sp = await searchParams;
+  const vista = sp.vista === "calendario" ? "calendario" : "lista";
+
+  const acciones = (
+    <div className="flex gap-2">
+      <Link className="btn-primario" href="/panel/citas/nueva">
+        Nueva cita
+      </Link>
+    </div>
+  );
+
+  if (vista === "calendario") {
+    const mes = /^\d{4}-\d{2}$/.test(sp.mes ?? "") ? sp.mes! : mesActualCr();
+    const inicioMes = crWallToUtc(`${mes}-01`, "00:00");
+    const finMes = crWallToUtc(`${mesRelativo(mes, 1)}-01`, "00:00");
+
+    const where: Prisma.CitaWhereInput = { fechaHora: { gte: inicioMes, lt: finMes } };
+    if (sp.estado) where.estado = sp.estado as Prisma.CitaWhereInput["estado"];
+
+    const citas = await prisma.cita.findMany({
+      where,
+      include: { cliente: true },
+      orderBy: { fechaHora: "asc" },
+    });
+
+    return (
+      <div className="space-y-5">
+        <div className="flex items-center justify-between">
+          <h1 className="text-xl font-semibold text-zinc-900">Citas</h1>
+          {acciones}
+        </div>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <VistaToggle vista="calendario" estado={sp.estado} />
+          <EstadoFiltroRapido estado={sp.estado} mes={mes} />
+        </div>
+        <CitasCalendario citas={citas} mes={mes} estado={sp.estado} />
+      </div>
+    );
+  }
 
   const where: Prisma.CitaWhereInput = {};
   if (sp.estado) where.estado = sp.estado as Prisma.CitaWhereInput["estado"];
@@ -55,6 +96,8 @@ export default async function CitasPage({ searchParams }: { searchParams: Search
           </Link>
         </div>
       </div>
+
+      <VistaToggle vista="lista" estado={sp.estado} />
 
       <div className="tarjeta">
         <FiltrosCitas />

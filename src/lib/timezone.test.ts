@@ -6,6 +6,10 @@ import {
   formatHora,
   formatFechaHora,
   rangoDiaCrUtc,
+  mesActualCr,
+  mesRelativo,
+  formatMesLargo,
+  grillaMes,
 } from "./timezone";
 
 describe("crWallToUtc / utcToCrWall", () => {
@@ -61,5 +65,43 @@ describe("rangoDiaCrUtc", () => {
   it("desplaza N días", () => {
     const ahora = new Date("2026-09-05T12:00:00.000Z");
     expect(rangoDiaCrUtc(2, ahora).inicio.toISOString()).toBe("2026-09-07T06:00:00.000Z");
+  });
+});
+
+describe("vista de calendario (mes)", () => {
+  it("mesActualCr / mesRelativo", () => {
+    const ahora = new Date("2026-09-05T12:00:00.000Z"); // 06:00 CR, sigue siendo 5/09
+    expect(mesActualCr(ahora)).toBe("2026-09");
+    expect(mesRelativo("2026-09", 1)).toBe("2026-10");
+    expect(mesRelativo("2026-01", -1)).toBe("2025-12");
+    expect(mesRelativo("2026-12", 1)).toBe("2027-01");
+  });
+
+  it("formatMesLargo", () => {
+    expect(formatMesLargo("2026-09")).toBe("Septiembre de 2026");
+  });
+
+  it("grillaMes empieza en lunes y cubre todo el mes", () => {
+    const g = grillaMes("2026-09"); // 1 de sept 2026 es martes
+    expect(g.length % 7).toBe(0);
+    expect(g[0].fecha).toBe("2026-08-31"); // lunes anterior
+    expect(g.some((d) => d.fecha === "2026-09-01" && d.enMes)).toBe(true);
+    expect(g.some((d) => d.fecha === "2026-09-30" && d.enMes)).toBe(true);
+    // días fuera del mes están marcados
+    expect(g.find((d) => d.fecha === "2026-08-31")?.enMes).toBe(false);
+  });
+
+  it("grillaMes marca 'hoy' correctamente", () => {
+    const ahora = new Date("2026-09-05T12:00:00.000Z");
+    const g = grillaMes("2026-09", ahora);
+    expect(g.find((d) => d.fecha === "2026-09-05")?.hoy).toBe(true);
+    expect(g.find((d) => d.fecha === "2026-09-06")?.hoy).toBe(false);
+  });
+
+  it("grillaMes recorta la última semana si es enteramente del mes siguiente", () => {
+    // Febrero 2026 cabe en 5 semanas (35 celdas): la 6ª sería toda de marzo.
+    expect(grillaMes("2026-02").length).toBe(35);
+    // Noviembre 2026 necesita las 6 semanas completas (42 celdas).
+    expect(grillaMes("2026-11").length).toBe(42);
   });
 });
