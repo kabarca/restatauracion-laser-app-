@@ -128,6 +128,22 @@ FORCE_DRY_RUN=false WHATSAPP_PHONE_NUMBER_ID=000 WHATSAPP_ACCESS_TOKEN=malo npm 
 ## Reiniciar los datos de prueba
 
 ```bash
-rm -rf .pglite
+rm -rf .pgdata
 npm run local
 ```
+
+## Si `npm run local` se queda pegado o ves "Internal Server Error"
+
+```bash
+# en cualquier terminal:
+lsof -iTCP:3000 -sTCP:LISTEN   # anotá el PID que aparece
+kill -9 <ese PID>
+lsof -iTCP:5433 -sTCP:LISTEN   # lo mismo para la base
+kill -9 <ese PID>
+npm run local
+```
+
+`npm run local` reutiliza el PostgreSQL si ya está corriendo, así que un segundo
+`Ctrl+C` + `npm run local` normalmente alcanza. Esto es distinto a como estaba
+antes (con una base "simulada" que se colgaba fácil) — ahora es un PostgreSQL
+de verdad, mucho más estable.

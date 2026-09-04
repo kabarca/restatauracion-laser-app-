@@ -38,9 +38,9 @@ npm install
 npm run local
 ```
 
-Eso levanta un Postgres embebido, crea las tablas, siembra un admin + citas de
+Eso levanta un PostgreSQL local real, crea las tablas, siembra un admin + citas de
 ejemplo y abre el panel en **http://localhost:3000** ya logueado. Ctrl+C detiene
-todo. Los datos quedan en `./.pglite` entre corridas.
+todo. Los datos quedan en `./.pgdata` entre corridas (postgres real, no simulado).
 
 Qué probar: ver **[GUIA-PRUEBAS.md](./GUIA-PRUEBAS.md)**.
 

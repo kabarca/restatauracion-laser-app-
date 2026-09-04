@@ -37,3 +37,6 @@ next-env.d.ts
 
 # PGlite (base de datos local de pruebas)
 /.pglite
+
+# PostgreSQL local (embedded-postgres)
+/.pgdata
