@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   AsYouType,
   getCountries,
@@ -11,15 +11,41 @@ import {
 
 const PRIORITARIOS: CountryCode[] = ["CR", "US", "NI", "PA", "MX", "CO", "GT", "HN", "SV", "ES"];
 
-const nombreRegion = new Intl.DisplayNames(["es"], { type: "region" });
-
 type PaisOpt = { iso: CountryCode; code: string; nombre: string };
 
-function construirPaises(): PaisOpt[] {
+/**
+ * Lista base SIN Intl: se renderiza en el servidor y en la primera hidratación,
+ * así el HTML del server y del cliente coinciden (evita el error de hidratación).
+ * El orden es por código ISO, 100% determinista.
+ */
+function listaBase(): PaisOpt[] {
   const todos: PaisOpt[] = getCountries().map((iso) => ({
     iso,
     code: getCountryCallingCode(iso),
-    nombre: nombreRegion.of(iso) ?? iso,
+    nombre: iso,
+  }));
+  const prio = PRIORITARIOS.map((iso) => todos.find((p) => p.iso === iso)).filter(
+    (p): p is PaisOpt => Boolean(p),
+  );
+  const resto = todos
+    .filter((p) => !PRIORITARIOS.includes(p.iso))
+    .sort((a, b) => (a.iso < b.iso ? -1 : 1));
+  return [...prio, ...resto];
+}
+
+/** Lista con nombres en español y orden alfabético — solo en el cliente. */
+function listaLocalizada(): PaisOpt[] {
+  let dn: Intl.DisplayNames | null = null;
+  try {
+    dn = new Intl.DisplayNames(["es"], { type: "region" });
+  } catch {
+    dn = null;
+  }
+  const nombreDe = (iso: string) => dn?.of(iso) ?? iso;
+  const todos: PaisOpt[] = getCountries().map((iso) => ({
+    iso,
+    code: getCountryCallingCode(iso),
+    nombre: nombreDe(iso),
   }));
   const prio = PRIORITARIOS.map((iso) => todos.find((p) => p.iso === iso)).filter(
     (p): p is PaisOpt => Boolean(p),
@@ -28,6 +54,10 @@ function construirPaises(): PaisOpt[] {
     .filter((p) => !PRIORITARIOS.includes(p.iso))
     .sort((a, b) => a.nombre.localeCompare(b.nombre, "es"));
   return [...prio, ...resto];
+}
+
+function etiquetaPais(p: PaisOpt): string {
+  return p.nombre === p.iso ? `${p.iso}  +${p.code}` : `${p.nombre} (+${p.code})`;
 }
 
 export function TelefonoInput({
@@ -39,9 +69,13 @@ export function TelefonoInput({
   defaultNumero?: string;
   error?: string;
 }) {
-  const paises = useMemo(construirPaises, []);
+  const [paises, setPaises] = useState<PaisOpt[]>(listaBase);
   const [pais, setPais] = useState<CountryCode>(defaultPais);
   const [numero, setNumero] = useState(defaultNumero);
+
+  useEffect(() => {
+    setPaises(listaLocalizada());
+  }, []);
 
   const formateado = new AsYouType(pais).input(numero);
   const parsed = numero ? parsePhoneNumberFromString(numero, pais) : undefined;
@@ -56,13 +90,13 @@ export function TelefonoInput({
         <select
           name="clientePais"
           aria-label="País"
-          className="campo max-w-[9.5rem]"
+          className="campo max-w-[11.5rem]"
           value={pais}
           onChange={(e) => setPais(e.target.value as CountryCode)}
         >
           {paises.map((p) => (
             <option key={p.iso} value={p.iso}>
-              {p.iso} +{p.code}
+              {etiquetaPais(p)}
             </option>
           ))}
         </select>
