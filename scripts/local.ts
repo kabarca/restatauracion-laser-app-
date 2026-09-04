@@ -57,6 +57,11 @@ void (async () => {
       });
     });
 
+  // Regenerar el cliente de Prisma: si el proyecto está en una carpeta sincronizada
+  // (iCloud/Dropbox/OneDrive), src/generated puede quedar a medias entre corridas.
+  console.log("▶  Generando cliente de Prisma…");
+  await run("npx", ["prisma", "generate"]);
+
   console.log("▶  Aplicando migraciones…");
   await run("npx", ["prisma", "migrate", "deploy"]);
   // Sincroniza cambios de esquema locales todavía sin migración (dev).
