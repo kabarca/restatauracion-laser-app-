@@ -41,6 +41,11 @@ export function Nav({ esAdmin }: { esAdmin: boolean }) {
           },
         ]
       : []),
+    {
+      href: "/panel/cambiar-password",
+      label: "Cambiar contraseña",
+      match: (p: string) => p.startsWith("/panel/cambiar-password"),
+    },
   ];
 
   return (

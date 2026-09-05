@@ -43,6 +43,22 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
+  // Cuenta recién invitada con contraseña temporal: no la dejamos usar el
+  // panel hasta que la cambie (se marca al invitar, se limpia al cambiarla).
+  const debeCambiarPassword = user?.user_metadata?.debeCambiarPassword === true;
+  if (
+    esPanel &&
+    debeCambiarPassword &&
+    pathname !== "/panel/cambiar-password" &&
+    !pathname.startsWith("/api/citas")
+  ) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/panel/cambiar-password";
+    url.search = "";
+    url.searchParams.set("obligatorio", "1");
+    return NextResponse.redirect(url);
+  }
+
   if (pathname === "/login" && user) {
     const url = request.nextUrl.clone();
     url.pathname = "/panel";

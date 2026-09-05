@@ -1,9 +1,22 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
 export default function CambiarPasswordPage() {
+  return (
+    <Suspense>
+      <CambiarPasswordForm />
+    </Suspense>
+  );
+}
+
+function CambiarPasswordForm() {
+  const router = useRouter();
+  const params = useSearchParams();
+  const obligatorio = params.get("obligatorio") === "1";
+
   const [actual, setActual] = useState("");
   const [nueva, setNueva] = useState("");
   const [repetir, setRepetir] = useState("");
@@ -48,7 +61,12 @@ export default function CambiarPasswordPage() {
       return;
     }
 
-    const { error: errUpdate } = await supabase.auth.updateUser({ password: nueva });
+    // Además de la nueva contraseña, apagamos la marca de "temporal" para que
+    // no lo volvamos a mandar para acá en el próximo inicio de sesión.
+    const { error: errUpdate } = await supabase.auth.updateUser({
+      password: nueva,
+      data: { debeCambiarPassword: false },
+    });
     setCargando(false);
     if (errUpdate) {
       setError("No se pudo cambiar la contraseña. Intentá de nuevo.");
@@ -58,11 +76,21 @@ export default function CambiarPasswordPage() {
     setActual("");
     setNueva("");
     setRepetir("");
+
+    if (obligatorio) {
+      router.replace("/panel");
+      router.refresh();
+    }
   }
 
   return (
     <div className="mx-auto max-w-sm space-y-5">
       <h1 className="text-xl font-semibold text-zinc-900">Cambiar contraseña</h1>
+      {obligatorio && (
+        <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
+          Iniciaste sesión con una contraseña temporal — elegí una nueva para poder seguir.
+        </p>
+      )}
 
       <form onSubmit={onSubmit} className="tarjeta space-y-4">
         <div>

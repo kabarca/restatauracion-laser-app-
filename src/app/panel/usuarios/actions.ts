@@ -43,7 +43,7 @@ export async function crearUsuario(
     email,
     password: passwordTemporal,
     email_confirm: true,
-    user_metadata: { nombre },
+    user_metadata: { nombre, debeCambiarPassword: true },
   });
 
   if (error || !data.user) {
