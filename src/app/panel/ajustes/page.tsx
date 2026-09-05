@@ -27,6 +27,10 @@ export default async function AjustesPage() {
         recordatorioMismoDiaDefault={a.recordatorioMismoDiaDefault === "true"}
         encuestaHabilitada={a.encuestaHabilitada === "true"}
         encuestaDiasDespues={Number(a.encuestaDiasDespues) || 1}
+        emailRecordatorioAsunto={a.emailRecordatorioAsunto}
+        emailRecordatorioCuerpo={a.emailRecordatorioCuerpo}
+        whatsappRecordatorioTexto={a.whatsappRecordatorioTexto}
+        contactoPublico={env.WHATSAPP_CONTACTO_PUBLICO}
       />
 
       <div className="tarjeta space-y-2 text-sm">

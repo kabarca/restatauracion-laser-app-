@@ -8,6 +8,11 @@ export const AJUSTES_DEFAULT: Record<string, string> = {
   whatsappContactoPublico: env.WHATSAPP_CONTACTO_PUBLICO,
   encuestaHabilitada: "false",
   encuestaDiasDespues: "1",
+  emailRecordatorioAsunto: "Recordatorio: tu cita con Restauración Láser es el {{fecha}}",
+  emailRecordatorioCuerpo:
+    "Hola {{nombre}},\n\nTe recordamos tu cita con Restauración Láser programada para el {{fecha}} a las {{hora}}\n\nSi tenés alguna consulta antes de la cita o necesitás reprogramar, escribinos por WhatsApp al {{whatsapp}}.\n\nTe esperamos.",
+  whatsappRecordatorioTexto:
+    "Hola {{nombre}}, te recordamos tu cita con Restauración Láser el {{fecha}} a las {{hora}}\n\nSi necesitás reprogramar, contactanos por acá. ¡Nos vemos pronto!",
 };
 
 export async function getAjuste(clave: string): Promise<string> {

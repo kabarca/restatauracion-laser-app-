@@ -1,9 +1,11 @@
 import { prisma } from "@/lib/prisma";
 import { env } from "@/lib/env";
+import { getAjustes } from "@/lib/ajustes";
 import { enviarPlantillaWhatsapp, type ResultadoEnvio } from "@/lib/whatsapp";
 import { enviarEmail } from "@/lib/email";
 import {
   whatsappParams,
+  aplicarPlaceholders,
   emailConfirmacion,
   emailRecordatorio,
   emailRecordatorioDia,
@@ -44,8 +46,10 @@ async function construirEmail(tipo: TipoMensaje, cita: CitaConCliente) {
   switch (tipo) {
     case "CONFIRMACION":
       return emailConfirmacion(d);
-    case "RECORDATORIO":
-      return emailRecordatorio(d);
+    case "RECORDATORIO": {
+      const a = await getAjustes();
+      return emailRecordatorio(d, { asunto: a.emailRecordatorioAsunto, cuerpo: a.emailRecordatorioCuerpo });
+    }
     case "RECORDATORIO_DIA":
       return emailRecordatorioDia(d);
     case "REPROGRAMACION":
@@ -91,6 +95,16 @@ async function alertarEquipo(cita: CitaConCliente, canal: Canal, tipo: TipoMensa
   await enviarEmail({ to: env.EMAIL_EQUIPO, subject, html, text });
 }
 
+/** Cuerpo de la plantilla de WhatsApp según el tipo — RECORDATORIO usa el texto
+ * editable en Ajustes (un solo parámetro con el mensaje ya armado). */
+async function bodyParamsPara(tipo: TipoMensaje, cita: CitaConCliente): Promise<string[]> {
+  if (tipo === "RECORDATORIO") {
+    const a = await getAjustes();
+    return [aplicarPlaceholders(a.whatsappRecordatorioTexto, datosDe(cita))];
+  }
+  return whatsappParams(datosDe(cita));
+}
+
 /** Envía WhatsApp (si el tipo tiene plantilla) + email, y registra ambos. */
 async function enviarPar(cita: CitaConCliente, tipo: TipoMensaje) {
   const plantilla = PLANTILLA_WA[tipo];
@@ -99,7 +113,7 @@ async function enviarPar(cita: CitaConCliente, tipo: TipoMensaje) {
       to: cita.cliente.telefono,
       template: plantilla,
       locale: env.WHATSAPP_TEMPLATE_LOCALE,
-      bodyParams: whatsappParams(datosDe(cita)),
+      bodyParams: await bodyParamsPara(tipo, cita),
     });
     await registrar(cita.id, "WHATSAPP", tipo, cita.cliente.telefono, wa);
     if (wa.estado === "FALLIDO") await alertarEquipo(cita, "WHATSAPP", tipo, wa.error ?? "?");
@@ -214,7 +228,7 @@ export async function reintentarMensaje(mensajeLogId: string) {
       to: cita.cliente.telefono,
       template: plantilla,
       locale: env.WHATSAPP_TEMPLATE_LOCALE,
-      bodyParams: whatsappParams(datosDe(cita)),
+      bodyParams: await bodyParamsPara(log.tipo, cita),
     });
   } else {
     const email = await construirEmail(log.tipo, cita);

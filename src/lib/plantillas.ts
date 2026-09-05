@@ -1,4 +1,5 @@
 import { env } from "@/lib/env";
+import { AJUSTES_DEFAULT } from "@/lib/ajustes";
 import { formatFechaLarga, formatHora } from "@/lib/timezone";
 import { nombreServicio } from "@/lib/servicios";
 
@@ -21,14 +22,52 @@ const contacto = () => env.WHATSAPP_CONTACTO_PUBLICO;
 //   Hola {{1}}, tu cita con Restauración Láser quedó agendada para el {{2}} a las {{3}}
 //
 //   Cualquier cambio, escribinos por este mismo WhatsApp. ¡Te esperamos!
-// Plantilla "recordatorio_cita":
-//   Hola {{1}}, te recordamos tu cita con Restauración Láser el {{2}} a las {{3}}
-//
-//   Si necesitás reprogramar, contactanos por acá. ¡Nos vemos pronto!
 // (Sin punto tras {{3}} porque la hora ya termina en "m.").
+//
+// Plantilla "recordatorio_cita": a diferencia de las demás, esta se edita desde
+// Ajustes → admin (ver PLACEHOLDERS_RECORDATORIO más abajo), así que debe estar
+// aprobada en Meta con UN SOLO parámetro {{1}} que reciba el mensaje completo
+// ya armado — no con {{1}}/{{2}}/{{3}} por separado.
 
 export function whatsappParams(d: DatosMensaje): string[] {
   return [d.nombreCliente, formatFechaLarga(d.fechaHora), formatHora(d.fechaHora)];
+}
+
+// ── Plantillas editables (Ajustes → admin) ──────────────────────────────────
+// El recordatorio (correo y WhatsApp) se arma a partir de texto que el admin
+// puede editar en Ajustes, con estos placeholders. Por eso, a diferencia de
+// las demás plantillas de WhatsApp, "recordatorio_cita" debe estar aprobada en
+// Meta con UN SOLO parámetro {{1}} que reciba el mensaje ya armado — no con
+// {{1}}/{{2}}/{{3}} separados.
+export const PLACEHOLDERS_RECORDATORIO = [
+  { token: "{{nombre}}", desc: "nombre del cliente" },
+  { token: "{{fecha}}", desc: "fecha de la cita" },
+  { token: "{{hora}}", desc: "hora de la cita" },
+  { token: "{{servicio}}", desc: "servicio (vacío si la cita no tiene uno)" },
+  { token: "{{whatsapp}}", desc: "número de WhatsApp de contacto" },
+] as const;
+
+export function aplicarPlaceholders(tpl: string, d: DatosMensaje): string {
+  return tpl
+    .replaceAll("{{nombre}}", d.nombreCliente)
+    .replaceAll("{{fecha}}", formatFechaLarga(d.fechaHora))
+    .replaceAll("{{hora}}", formatHora(d.fechaHora))
+    .replaceAll("{{servicio}}", nombreServicio(d.servicio) ?? "")
+    .replaceAll("{{whatsapp}}", contacto());
+}
+
+function escapeHtml(s: string): string {
+  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+/** Texto plano (párrafos separados por línea en blanco) → párrafos <p> del correo. */
+function textoAHtml(texto: string): string {
+  return texto
+    .trim()
+    .split(/\n\s*\n/)
+    .filter(Boolean)
+    .map((p) => `<p style="margin:0 0 12px;">${escapeHtml(p).replace(/\n/g, "<br>")}</p>`)
+    .join("");
 }
 
 // ── Email ───────────────────────────────────────────────────────────────────
@@ -113,27 +152,13 @@ Gracias por confiar en Restauración Láser.`;
   return { subject, text, html };
 }
 
-export function emailRecordatorio(d: DatosMensaje) {
-  const fecha = formatFechaLarga(d.fechaHora);
-  const hora = formatHora(d.fechaHora);
-  const subject = `Recordatorio: tu cita con Restauración Láser es el ${fecha}`;
-  const text = `Hola ${d.nombreCliente},
-
-Te recordamos tu cita con Restauración Láser programada para el ${fecha} a las ${hora}
-
-Si tenés alguna consulta antes de la cita o necesitás reprogramar, escribinos por WhatsApp al ${contacto()}.
-
-Te esperamos.`;
-  const html = layout(
-    "Recordatorio de tu cita",
-    `<p style="margin:0 0 12px;">Hola ${d.nombreCliente},</p>
-     <p style="margin:0 0 12px;">Te recordamos tu cita con Restauración Láser programada para el
-       <strong>${fecha}</strong> a las <strong>${hora}</strong></p>
-     ${lineaServicio(d.servicio)}
-     <p style="margin:0 0 12px;">Si tenés alguna consulta antes de la cita o necesitás
-       reprogramar, escribinos por WhatsApp al <strong>${contacto()}</strong>.</p>
-     <p style="margin:0;">Te esperamos.</p>`,
+export function emailRecordatorio(d: DatosMensaje, plantilla?: { asunto: string; cuerpo: string }) {
+  const subject = aplicarPlaceholders(
+    plantilla?.asunto || AJUSTES_DEFAULT.emailRecordatorioAsunto,
+    d,
   );
+  const text = aplicarPlaceholders(plantilla?.cuerpo || AJUSTES_DEFAULT.emailRecordatorioCuerpo, d);
+  const html = layout("Recordatorio de tu cita", textoAHtml(text));
   return { subject, text, html };
 }
 
@@ -269,7 +294,7 @@ Contraseña temporal: ${args.passwordTemporal}
 
 Entrá acá: ${url}
 
-Por seguridad, cambiá la contraseña apenas entres (arriba a la derecha, "Cambiar contraseña").`;
+Por seguridad, el sistema te va a pedir que la cambiés apenas inicies sesión.`;
   const html = layout(
     "Te invitaron al equipo",
     `<p style="margin:0 0 12px;">Hola ${args.nombre},</p>
@@ -285,8 +310,7 @@ Por seguridad, cambiá la contraseña apenas entres (arriba a la derecha, "Cambi
      </table>
      ${boton(url, "Entrar al panel")}
      <p style="margin:24px 0 0;color:#71717a;text-align:center;font-size:13px;">Por seguridad,
-       cambiá esta contraseña apenas entres — arriba a la derecha vas a ver la opción
-       <strong>"Cambiar contraseña"</strong>.</p>`,
+       el sistema te va a pedir que la cambiés apenas inicies sesión.</p>`,
   );
   return { subject, text, html };
 }
