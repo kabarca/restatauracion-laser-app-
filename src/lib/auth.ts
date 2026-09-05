@@ -6,8 +6,8 @@ import type { Rol, Usuario } from "@/generated/prisma";
 
 /**
  * Devuelve el perfil (tabla `usuarios`) de quien tiene sesión, o null si no hay
- * sesión / no existe fila. Puede venir con `activo: false` o `aprobado: false`
- * — quien llame decide qué hacer (ver requireUsuario). Cacheado por request.
+ * sesión / no existe fila. Puede venir con `activo: false` — quien llame
+ * decide qué hacer (ver requireUsuario). Cacheado por request.
  */
 export const getUsuarioActual = cache(async (): Promise<Usuario | null> => {
   // Atajo SOLO para desarrollo local sin Supabase: si DEV_AUTOLOGIN_EMAIL está
@@ -26,15 +26,13 @@ export const getUsuarioActual = cache(async (): Promise<Usuario | null> => {
 });
 
 /**
- * Exige sesión válida, cuenta activa y aprobada. Redirige a /login si no hay
- * sesión/fila, a /cuenta-desactivada si un admin la desactivó, o a
- * /pendiente-aprobacion si todavía no la aprueban (autorregistro en /registro).
+ * Exige sesión válida y cuenta activa. Redirige a /login si no hay sesión/fila,
+ * o a /cuenta-desactivada si un admin la desactivó.
  */
 export async function requireUsuario(): Promise<Usuario> {
   const usuario = await getUsuarioActual();
   if (!usuario) redirect("/login");
   if (!usuario.activo) redirect("/cuenta-desactivada");
-  if (!usuario.aprobado) redirect("/pendiente-aprobacion");
   return usuario;
 }
 

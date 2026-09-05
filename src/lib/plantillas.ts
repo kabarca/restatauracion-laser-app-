@@ -251,27 +251,42 @@ Revisá la cita: ${url}`;
   return { subject, text, html };
 }
 
-// ── Nueva solicitud de acceso (autorregistro en /registro) ─────────────────
-export function emailNuevaSolicitud(args: { nombre: string; email: string; rol: string }) {
-  const url = `${env.NEXT_PUBLIC_APP_URL}/panel/usuarios`;
+// ── Invitación al equipo (un admin crea la cuenta desde Panel → Equipo) ─────
+export function emailInvitacion(args: {
+  nombre: string;
+  rol: string;
+  passwordTemporal: string;
+}) {
+  const url = `${env.NEXT_PUBLIC_APP_URL}/login`;
   const rolTxt = args.rol === "ADMIN" ? "Administrador" : "Staff";
-  const subject = `Nueva solicitud de acceso: ${args.nombre} (${rolTxt})`;
-  const text = `${args.nombre} (${args.email}) pidió acceso al panel de Restauración Láser como ${rolTxt}.
+  const subject = "Te invitaron al panel de Restauración Láser";
+  const text = `Hola ${args.nombre},
 
-Entrá a Equipo para aprobarlo o rechazarlo: ${url}`;
+Un administrador te creó una cuenta en el panel de recordatorios de Restauración Láser, con rol ${rolTxt}.
+
+Correo: (el mismo al que te llegó este mensaje)
+Contraseña temporal: ${args.passwordTemporal}
+
+Entrá acá: ${url}
+
+Por seguridad, cambiá la contraseña apenas entres (arriba a la derecha, "Cambiar contraseña").`;
   const html = layout(
-    "Nueva solicitud de acceso",
-    `<p style="margin:0 0 8px;text-align:center;">
-       <strong style="font-size:16px;">${args.nombre}</strong><br>
-       <span style="color:#71717a;">${args.email}</span>
+    "Te invitaron al equipo",
+    `<p style="margin:0 0 12px;">Hola ${args.nombre},</p>
+     <p style="margin:0 0 20px;">Un administrador te creó una cuenta en el panel de
+       recordatorios de Restauración Láser, con rol
+       <span style="display:inline-block;padding:2px 10px;border-radius:999px;background:#fdece7;color:${MARCA};font-weight:700;font-size:13px;">${rolTxt}</span>.
      </p>
-     <p style="margin:0 0 24px;text-align:center;">
-       Pidió acceso al panel como
-       <span style="display:inline-block;padding:2px 10px;border-radius:999px;background:#fdece7;color:${MARCA};font-weight:700;font-size:13px;">${rolTxt}</span>
-     </p>
-     <p style="margin:0 0 24px;color:#71717a;text-align:center;">Nadie entra sin que un
-       administrador lo apruebe primero.</p>
-     ${boton(url, "Revisar en Equipo")}`,
+     <table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;background:#fafaf9;border:1px solid #e4e4e7;border-radius:12px;margin:0 0 24px;">
+       <tr><td style="padding:16px 20px;">
+         <p style="margin:0 0 4px;font-size:12px;text-transform:uppercase;letter-spacing:.03em;color:#a1a1aa;">Contraseña temporal</p>
+         <p style="margin:0;font-family:ui-monospace,monospace;font-size:18px;font-weight:700;color:#18181b;letter-spacing:.02em;">${args.passwordTemporal}</p>
+       </td></tr>
+     </table>
+     ${boton(url, "Entrar al panel")}
+     <p style="margin:24px 0 0;color:#71717a;text-align:center;font-size:13px;">Por seguridad,
+       cambiá esta contraseña apenas entres — arriba a la derecha vas a ver la opción
+       <strong>"Cambiar contraseña"</strong>.</p>`,
   );
   return { subject, text, html };
 }

@@ -25,7 +25,12 @@ export function UsuarioForm() {
         <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800">
           <p className="font-medium">Miembro creado: {state.emailCreado}</p>
           <p className="mt-1">
-            Contraseña temporal (mostrala una sola vez, pedile que la cambie):{" "}
+            {state.avisoEnviado
+              ? "Le mandamos un correo de invitación con su contraseña temporal."
+              : "No se pudo enviar el correo de invitación todavía (modo prueba o falla de Resend) — pasásela vos por otro medio:"}
+          </p>
+          <p className="mt-1">
+            Contraseña temporal:{" "}
             <code className="rounded bg-white px-1.5 py-0.5 font-mono">{state.passwordTemporal}</code>
           </p>
         </div>

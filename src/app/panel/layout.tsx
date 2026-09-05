@@ -28,6 +28,10 @@ export default async function PanelLayout({ children }: { children: React.ReactN
           <div className="flex items-center gap-3 text-sm text-zinc-500">
             <span>{usuario.nombre}</span>
             <span className="text-zinc-300">·</span>
+            <Link href="/panel/cambiar-password" className="hover:text-zinc-900">
+              Cambiar contraseña
+            </Link>
+            <span className="text-zinc-300">·</span>
             <CerrarSesion />
           </div>
         </div>

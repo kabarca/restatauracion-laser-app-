@@ -5,12 +5,15 @@ import { prisma } from "@/lib/prisma";
 import { requireRol } from "@/lib/auth";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { usuarioSchema } from "@/lib/validation";
+import { enviarEmail } from "@/lib/email";
+import { emailInvitacion } from "@/lib/plantillas";
 
 export type UsuarioFormState = {
   ok: boolean;
   error?: string;
   passwordTemporal?: string;
   emailCreado?: string;
+  avisoEnviado?: boolean;
 };
 
 function generarPassword(): string {
@@ -51,8 +54,16 @@ export async function crearUsuario(
     data: { authUserId: data.user.id, nombre, email, rol },
   });
 
+  const { subject, html, text } = emailInvitacion({ nombre, rol, passwordTemporal });
+  const envio = await enviarEmail({ to: email, subject, html, text });
+
   revalidatePath("/panel/usuarios");
-  return { ok: true, passwordTemporal, emailCreado: email };
+  return {
+    ok: true,
+    passwordTemporal,
+    emailCreado: email,
+    avisoEnviado: envio.estado === "ENVIADO",
+  };
 }
 
 export async function cambiarActivo(usuarioId: string, activo: boolean) {
@@ -64,28 +75,5 @@ export async function cambiarActivo(usuarioId: string, activo: boolean) {
 export async function cambiarRol(usuarioId: string, rol: "ADMIN" | "STAFF") {
   await requireRol("ADMIN");
   await prisma.usuario.update({ where: { id: usuarioId }, data: { rol } });
-  revalidatePath("/panel/usuarios");
-}
-
-/** Aprueba una solicitud de autorregistro (/registro) — le da acceso real. */
-export async function aprobarUsuario(usuarioId: string) {
-  await requireRol("ADMIN");
-  await prisma.usuario.update({ where: { id: usuarioId }, data: { aprobado: true } });
-  revalidatePath("/panel/usuarios");
-}
-
-/** Rechaza una solicitud: borra el perfil y la cuenta de Supabase Auth. */
-export async function rechazarUsuario(usuarioId: string) {
-  await requireRol("ADMIN");
-  const usuario = await prisma.usuario.findUnique({ where: { id: usuarioId } });
-  if (!usuario || usuario.aprobado) return; // solo aplica a solicitudes pendientes
-
-  await prisma.usuario.delete({ where: { id: usuarioId } });
-  await createSupabaseAdminClient()
-    .auth.admin.deleteUser(usuario.authUserId)
-    .catch(() => {
-      // Si falla borrar la cuenta de Auth, el perfil igual ya no existe —
-      // no puede entrar al panel de todos modos.
-    });
   revalidatePath("/panel/usuarios");
 }

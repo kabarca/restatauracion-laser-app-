@@ -104,6 +104,11 @@ export function mesActualCr(ahora = new Date()): string {
   return utcToCrWall(ahora).fecha.slice(0, 7);
 }
 
+/** "YYYY-MM-DD" de hoy en Costa Rica. */
+export function hoyCr(ahora = new Date()): string {
+  return utcToCrWall(ahora).fecha;
+}
+
 /** "2026-09" + delta meses → "2026-08" / "2026-10" / etc. */
 export function mesRelativo(mes: string, delta: number): string {
   const [y, m] = mes.split("-").map(Number);

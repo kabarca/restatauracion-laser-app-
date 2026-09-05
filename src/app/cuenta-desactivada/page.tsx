@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic";
 export default async function CuentaDesactivadaPage() {
   const usuario = await getUsuarioActual();
   if (!usuario) redirect("/login");
-  if (usuario.activo) redirect(usuario.aprobado ? "/panel" : "/pendiente-aprobacion");
+  if (usuario.activo) redirect("/panel");
 
   return (
     <main className="flex min-h-screen items-center justify-center p-4">

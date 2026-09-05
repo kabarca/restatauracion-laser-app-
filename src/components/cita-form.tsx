@@ -8,6 +8,7 @@ import { TelefonoInput } from "@/components/telefono-input";
 import { PreviewMensajes } from "@/components/preview-mensajes";
 import { DatePicker } from "@/components/date-picker";
 import { TimePicker } from "@/components/time-picker";
+import { hoyCr } from "@/lib/timezone";
 
 function Enviar() {
   const { pending } = useFormStatus();
@@ -17,8 +18,6 @@ function Enviar() {
     </button>
   );
 }
-
-const hoy = () => new Date(Date.now() - 6 * 3600 * 1000).toISOString().slice(0, 10);
 
 export function CitaForm({
   diasRecordatorioDefault,
@@ -33,7 +32,7 @@ export function CitaForm({
   const fe = state.fieldErrors ?? {};
 
   const [nombre, setNombre] = useState("");
-  const [fecha, setFecha] = useState(fechaDefault && fechaDefault >= hoy() ? fechaDefault : hoy());
+  const [fecha, setFecha] = useState(fechaDefault && fechaDefault >= hoyCr() ? fechaDefault : hoyCr());
   const [hora, setHora] = useState("09:00");
   const [servicio, setServicio] = useState("");
 
@@ -78,7 +77,7 @@ export function CitaForm({
             <label className="etiqueta" htmlFor="fecha">
               Fecha
             </label>
-            <DatePicker id="fecha" name="fecha" value={fecha} onChange={setFecha} min={hoy()} />
+            <DatePicker id="fecha" name="fecha" value={fecha} onChange={setFecha} min={hoyCr()} />
             {fe.fecha && <p className="mt-1 text-sm text-red-600">{fe.fecha[0]}</p>}
           </div>
           <div>

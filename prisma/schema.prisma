@@ -53,10 +53,6 @@ model Usuario {
   email         String   @unique
   rol           Rol      @default(STAFF)
   activo        Boolean  @default(true)
-  // true para cuentas creadas por un admin (invitación directa); false para
-  // las que se autorregistran en /registro — quedan sin acceso hasta que un
-  // admin las aprueba desde Panel → Equipo.
-  aprobado      Boolean  @default(true)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
