@@ -77,3 +77,31 @@ export async function cambiarRol(usuarioId: string, rol: "ADMIN" | "STAFF") {
   await prisma.usuario.update({ where: { id: usuarioId }, data: { rol } });
   revalidatePath("/panel/usuarios");
 }
+
+export async function eliminarUsuario(usuarioId: string): Promise<{ ok: boolean; error?: string }> {
+  const yo = await requireRol("ADMIN");
+  if (usuarioId === yo.id) {
+    return { ok: false, error: "No podés eliminarte a vos mismo." };
+  }
+
+  const usuario = await prisma.usuario.findUnique({ where: { id: usuarioId } });
+  if (!usuario) return { ok: false, error: "Ese miembro ya no existe." };
+
+  try {
+    await prisma.usuario.delete({ where: { id: usuarioId } });
+  } catch {
+    return {
+      ok: false,
+      error: "No se pudo eliminar: tiene citas registradas a su nombre. Desactivalo en su lugar.",
+    };
+  }
+
+  // La fila ya se borró; si esto falla, el usuario queda sin acceso pero
+  // huérfano en Supabase Auth, así que solo lo dejamos registrado.
+  const admin = createSupabaseAdminClient();
+  const { error } = await admin.auth.admin.deleteUser(usuario.authUserId);
+  if (error) console.error("No se pudo eliminar el usuario de Supabase Auth:", error.message);
+
+  revalidatePath("/panel/usuarios");
+  return { ok: true };
+}

@@ -1,6 +1,7 @@
 "use client";
 
-import { cambiarActivo, cambiarRol } from "@/app/panel/usuarios/actions";
+import { useState, useTransition } from "react";
+import { cambiarActivo, cambiarRol, eliminarUsuario } from "@/app/panel/usuarios/actions";
 import type { Rol } from "@/generated/prisma";
 
 type Fila = {
@@ -10,6 +11,64 @@ type Fila = {
   rol: Rol;
   activo: boolean;
 };
+
+function AccionesFila({ usuario }: { usuario: Fila }) {
+  const [confirmando, setConfirmando] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [pending, startTransition] = useTransition();
+
+  function eliminar() {
+    setError(null);
+    startTransition(async () => {
+      const res = await eliminarUsuario(usuario.id);
+      if (!res.ok) {
+        setError(res.error ?? "No se pudo eliminar.");
+        setConfirmando(false);
+        return;
+      }
+    });
+  }
+
+  if (confirmando) {
+    return (
+      <div className="flex items-center justify-end gap-2">
+        <span className="text-xs text-zinc-500">¿Eliminar a {usuario.nombre}?</span>
+        <button
+          className="text-xs font-medium text-red-600 underline hover:no-underline disabled:opacity-50"
+          onClick={eliminar}
+          disabled={pending}
+        >
+          {pending ? "Eliminando…" : "Sí, eliminar"}
+        </button>
+        <button
+          className="text-xs font-medium text-zinc-500 underline hover:no-underline"
+          onClick={() => setConfirmando(false)}
+          disabled={pending}
+        >
+          Cancelar
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex items-center justify-end gap-3">
+      {error && <span className="text-xs text-red-600">{error}</span>}
+      <button
+        className="text-xs font-medium text-zinc-700 underline hover:no-underline"
+        onClick={() => cambiarActivo(usuario.id, !usuario.activo)}
+      >
+        {usuario.activo ? "Desactivar" : "Reactivar"}
+      </button>
+      <button
+        className="text-xs font-medium text-red-600 underline hover:no-underline"
+        onClick={() => setConfirmando(true)}
+      >
+        Eliminar
+      </button>
+    </div>
+  );
+}
 
 export function UsuariosTabla({ usuarios, yoId }: { usuarios: Fila[]; yoId: string }) {
   return (
@@ -51,16 +110,7 @@ export function UsuariosTabla({ usuarios, yoId }: { usuarios: Fila[]; yoId: stri
                     <span className="text-zinc-400">Inactivo</span>
                   )}
                 </td>
-                <td className="px-4 py-3 text-right">
-                  {!esYo && (
-                    <button
-                      className="text-xs font-medium text-zinc-700 underline hover:no-underline"
-                      onClick={() => cambiarActivo(u.id, !u.activo)}
-                    >
-                      {u.activo ? "Desactivar" : "Reactivar"}
-                    </button>
-                  )}
-                </td>
+                <td className="px-4 py-3 text-right">{!esYo && <AccionesFila usuario={u} />}</td>
               </tr>
             );
           })}
