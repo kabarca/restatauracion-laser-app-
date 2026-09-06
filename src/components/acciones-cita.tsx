@@ -101,13 +101,13 @@ export function AccionesCita({
         <form action={repAction} className="tarjeta space-y-3">
           <p className="text-sm font-medium text-zinc-900">Nueva fecha y hora</p>
           <div className="flex flex-wrap items-start gap-3">
-            <div className="w-48">
+            <div className="w-full sm:w-48">
               <DatePicker name="fecha" value={fecha} onChange={setFecha} />
             </div>
-            <div className="w-36">
+            <div className="w-full sm:w-36">
               <TimePicker name="hora" value={hora} onChange={setHora} />
             </div>
-            <Boton className="btn-primario">Guardar y avisar</Boton>
+            <Boton className="btn-primario w-full sm:w-auto">Guardar y avisar</Boton>
           </div>
           {repState.error && <p className="text-sm text-red-600">{repState.error}</p>}
           {repState.ok && <p className="text-sm text-emerald-600">Cita reprogramada y aviso enviado.</p>}

@@ -86,11 +86,11 @@ export function TelefonoInput({
       <label className="etiqueta" htmlFor="clienteTelefono">
         Teléfono (WhatsApp)
       </label>
-      <div className="flex gap-2">
+      <div className="flex flex-col gap-2 sm:flex-row">
         <select
           name="clientePais"
           aria-label="País"
-          className="campo max-w-[11.5rem]"
+          className="campo sm:max-w-[11.5rem]"
           value={pais}
           onChange={(e) => setPais(e.target.value as CountryCode)}
         >

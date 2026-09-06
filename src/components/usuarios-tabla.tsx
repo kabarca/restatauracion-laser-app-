@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { cambiarActivo, cambiarRol, eliminarUsuario } from "@/app/panel/usuarios/actions";
+import { cn } from "@/lib/cn";
 import type { Rol } from "@/generated/prisma";
 
 type Fila = {
@@ -12,7 +13,7 @@ type Fila = {
   activo: boolean;
 };
 
-function AccionesFila({ usuario }: { usuario: Fila }) {
+function AccionesFila({ usuario, alinear = "end" }: { usuario: Fila; alinear?: "start" | "end" }) {
   const [confirmando, setConfirmando] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
@@ -29,9 +30,11 @@ function AccionesFila({ usuario }: { usuario: Fila }) {
     });
   }
 
+  const justify = alinear === "end" ? "justify-end" : "justify-start";
+
   if (confirmando) {
     return (
-      <div className="flex items-center justify-end gap-2">
+      <div className={cn("flex flex-wrap items-center gap-2", justify)}>
         <span className="text-xs text-zinc-500">¿Eliminar a {usuario.nombre}?</span>
         <button
           className="text-xs font-medium text-red-600 underline hover:no-underline disabled:opacity-50"
@@ -52,7 +55,7 @@ function AccionesFila({ usuario }: { usuario: Fila }) {
   }
 
   return (
-    <div className="flex items-center justify-end gap-3">
+    <div className={cn("flex flex-wrap items-center gap-3", justify)}>
       {error && <span className="text-xs text-red-600">{error}</span>}
       <button
         className="text-xs font-medium text-zinc-700 underline hover:no-underline"
@@ -70,52 +73,90 @@ function AccionesFila({ usuario }: { usuario: Fila }) {
   );
 }
 
+function SelectorRol({ usuario, esYo }: { usuario: Fila; esYo: boolean }) {
+  return (
+    <select
+      className="campo max-w-28 py-1"
+      defaultValue={usuario.rol}
+      disabled={esYo}
+      onChange={(e) => cambiarRol(usuario.id, e.target.value as "ADMIN" | "STAFF")}
+      aria-label={`Rol de ${usuario.nombre}`}
+    >
+      <option value="STAFF">Staff</option>
+      <option value="ADMIN">Admin</option>
+    </select>
+  );
+}
+
 export function UsuariosTabla({ usuarios, yoId }: { usuarios: Fila[]; yoId: string }) {
   return (
-    <div className="overflow-x-auto rounded-xl border border-zinc-200 bg-white">
-      <table className="w-full text-sm">
-        <thead className="border-b border-zinc-200 bg-zinc-50 text-left text-xs uppercase text-zinc-500">
-          <tr>
-            <th className="px-4 py-3">Nombre</th>
-            <th className="px-4 py-3">Correo</th>
-            <th className="px-4 py-3">Rol</th>
-            <th className="px-4 py-3">Estado</th>
-            <th className="px-4 py-3"></th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-zinc-100">
-          {usuarios.map((u) => {
-            const esYo = u.id === yoId;
-            return (
-              <tr key={u.id}>
-                <td className="px-4 py-3 text-zinc-900">
-                  {u.nombre} {esYo && <span className="text-xs text-zinc-400">(vos)</span>}
-                </td>
-                <td className="px-4 py-3 text-zinc-500">{u.email}</td>
-                <td className="px-4 py-3">
-                  <select
-                    className="campo max-w-28 py-1"
-                    defaultValue={u.rol}
-                    disabled={esYo}
-                    onChange={(e) => cambiarRol(u.id, e.target.value as "ADMIN" | "STAFF")}
-                  >
-                    <option value="STAFF">Staff</option>
-                    <option value="ADMIN">Admin</option>
-                  </select>
-                </td>
-                <td className="px-4 py-3">
-                  {u.activo ? (
-                    <span className="text-emerald-600">Activo</span>
-                  ) : (
-                    <span className="text-zinc-400">Inactivo</span>
-                  )}
-                </td>
-                <td className="px-4 py-3 text-right">{!esYo && <AccionesFila usuario={u} />}</td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
-    </div>
+    <>
+      {/* Móvil: tarjetas */}
+      <ul className="space-y-2 sm:hidden">
+        {usuarios.map((u) => {
+          const esYo = u.id === yoId;
+          return (
+            <li key={u.id} className="space-y-2 rounded-xl border border-zinc-200 bg-white p-3">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="font-medium text-zinc-900">
+                    {u.nombre} {esYo && <span className="text-xs text-zinc-400">(vos)</span>}
+                  </div>
+                  <div className="truncate text-sm text-zinc-500">{u.email}</div>
+                </div>
+                <span className={u.activo ? "text-sm text-emerald-600" : "text-sm text-zinc-400"}>
+                  {u.activo ? "Activo" : "Inactivo"}
+                </span>
+              </div>
+              <div className="flex items-center justify-between gap-3">
+                <SelectorRol usuario={u} esYo={esYo} />
+                {!esYo && <AccionesFila usuario={u} alinear="end" />}
+              </div>
+            </li>
+          );
+        })}
+      </ul>
+
+      {/* Tablet / escritorio: tabla */}
+      <div className="hidden overflow-x-auto rounded-xl border border-zinc-200 bg-white sm:block">
+        <table className="w-full text-sm">
+          <thead className="border-b border-zinc-200 bg-zinc-50 text-left text-xs uppercase text-zinc-500">
+            <tr>
+              <th className="px-4 py-3">Nombre</th>
+              <th className="px-4 py-3">Correo</th>
+              <th className="px-4 py-3">Rol</th>
+              <th className="px-4 py-3">Estado</th>
+              <th className="px-4 py-3"></th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-zinc-100">
+            {usuarios.map((u) => {
+              const esYo = u.id === yoId;
+              return (
+                <tr key={u.id}>
+                  <td className="px-4 py-3 text-zinc-900">
+                    {u.nombre} {esYo && <span className="text-xs text-zinc-400">(vos)</span>}
+                  </td>
+                  <td className="px-4 py-3 text-zinc-500">{u.email}</td>
+                  <td className="px-4 py-3">
+                    <SelectorRol usuario={u} esYo={esYo} />
+                  </td>
+                  <td className="px-4 py-3">
+                    {u.activo ? (
+                      <span className="text-emerald-600">Activo</span>
+                    ) : (
+                      <span className="text-zinc-400">Inactivo</span>
+                    )}
+                  </td>
+                  <td className="px-4 py-3 text-right">
+                    {!esYo && <AccionesFila usuario={u} alinear="end" />}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </>
   );
 }

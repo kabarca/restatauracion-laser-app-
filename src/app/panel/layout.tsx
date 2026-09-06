@@ -11,24 +11,27 @@ export default async function PanelLayout({ children }: { children: React.ReactN
   return (
     <div className="min-h-screen">
       <header className="border-b border-zinc-200 bg-white">
-        <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-3 px-4 py-3">
-          <div className="flex items-center gap-6">
+        <div className="mx-auto max-w-5xl px-4 py-3">
+          <div className="flex items-center justify-between gap-3">
             <Link href="/panel" aria-label="Restauración Láser — Inicio">
               <Image
                 src="/logo-full.png"
                 alt="Restauración Láser"
                 width={190}
                 height={104}
-                className="h-12 w-auto"
+                className="h-10 w-auto sm:h-12"
                 priority
               />
             </Link>
-            <Nav esAdmin={usuario.rol === "ADMIN"} />
+            <div className="flex items-center gap-2 whitespace-nowrap text-sm text-zinc-500">
+              <span className="max-w-[9rem] truncate sm:max-w-none">{usuario.nombre}</span>
+              <span className="text-zinc-300">·</span>
+              <CerrarSesion />
+            </div>
           </div>
-          <div className="flex items-center gap-3 text-sm text-zinc-500">
-            <span>{usuario.nombre}</span>
-            <span className="text-zinc-300">·</span>
-            <CerrarSesion />
+
+          <div className="mt-2.5">
+            <Nav esAdmin={usuario.rol === "ADMIN"} />
           </div>
         </div>
       </header>

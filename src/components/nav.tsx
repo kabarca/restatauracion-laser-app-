@@ -49,7 +49,7 @@ export function Nav({ esAdmin }: { esAdmin: boolean }) {
   ];
 
   return (
-    <nav className="flex gap-1">
+    <nav className="-mx-1 flex flex-wrap gap-1">
       {links.map((l) => {
         const activo = l.match(pathname);
         return (
@@ -57,7 +57,7 @@ export function Nav({ esAdmin }: { esAdmin: boolean }) {
             key={l.href}
             href={l.href}
             className={cn(
-              "rounded-lg px-3 py-1.5 text-sm font-medium transition",
+              "rounded-lg px-2.5 py-1.5 text-[13px] font-medium transition sm:px-3 sm:text-sm",
               activo ? "bg-marca text-white" : "text-zinc-600 hover:bg-zinc-100",
             )}
           >

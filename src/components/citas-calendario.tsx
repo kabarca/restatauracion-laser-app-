@@ -80,8 +80,8 @@ export function CitasCalendario({
         </div>
       </div>
 
-      <div className="overflow-x-auto">
-        <div className="min-w-[720px]">
+      <div className="-mx-1 overflow-x-auto px-1">
+        <div className="min-w-[640px]">
           <div className="grid grid-cols-7 overflow-hidden rounded-t-xl border border-b-0 border-zinc-200">
             {DIAS_SEMANA.map((d) => (
               <div

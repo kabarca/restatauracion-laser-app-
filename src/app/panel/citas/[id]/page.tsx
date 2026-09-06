@@ -175,41 +175,67 @@ export default async function CitaDetallePage({
         {cita.mensajes.length === 0 ? (
           <p className="text-sm text-zinc-400">Todavía no se ha enviado ningún mensaje.</p>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="text-left text-xs uppercase text-zinc-400">
-                <tr>
-                  <th className="py-2 pr-4">Fecha</th>
-                  <th className="py-2 pr-4">Tipo</th>
-                  <th className="py-2 pr-4">Canal</th>
-                  <th className="py-2 pr-4">Destino</th>
-                  <th className="py-2 pr-4">Estado</th>
-                  <th className="py-2 pr-4"></th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-zinc-100">
-                {cita.mensajes.map((m) => (
-                  <tr key={m.id}>
-                    <td className="py-2 pr-4 text-zinc-500">
-                      {formatFechaCorta(m.enviadoEn)} {formatHora(m.enviadoEn)}
-                    </td>
-                    <td className="py-2 pr-4">{TIPO_LABEL[m.tipo]}</td>
-                    <td className="py-2 pr-4">{CANAL_LABEL[m.canal]}</td>
-                    <td className="py-2 pr-4 text-zinc-500">{m.destino}</td>
-                    <td className="py-2 pr-4">
-                      <EstadoMensajeBadge estado={m.estado} />
-                      {m.error && <div className="text-xs text-red-500">{m.error}</div>}
-                    </td>
-                    <td className="py-2 pr-4">
-                      {esAdmin && m.estado === "FALLIDO" && (
-                        <ReintentarMensaje citaId={cita.id} mensajeLogId={m.id} />
-                      )}
-                    </td>
+          <>
+            {/* Móvil: lista */}
+            <ul className="space-y-3 sm:hidden">
+              {cita.mensajes.map((m) => (
+                <li key={m.id} className="border-t border-zinc-100 pt-3 text-sm first:border-t-0 first:pt-0">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="font-medium text-zinc-900">
+                      {TIPO_LABEL[m.tipo]} · {CANAL_LABEL[m.canal]}
+                    </span>
+                    <EstadoMensajeBadge estado={m.estado} />
+                  </div>
+                  <div className="mt-0.5 text-xs text-zinc-500">
+                    {formatFechaCorta(m.enviadoEn)} {formatHora(m.enviadoEn)} · {m.destino}
+                  </div>
+                  {m.error && <div className="mt-0.5 text-xs text-red-500">{m.error}</div>}
+                  {esAdmin && m.estado === "FALLIDO" && (
+                    <div className="mt-1">
+                      <ReintentarMensaje citaId={cita.id} mensajeLogId={m.id} />
+                    </div>
+                  )}
+                </li>
+              ))}
+            </ul>
+
+            {/* Tablet / escritorio: tabla */}
+            <div className="hidden overflow-x-auto sm:block">
+              <table className="w-full text-sm">
+                <thead className="text-left text-xs uppercase text-zinc-400">
+                  <tr>
+                    <th className="py-2 pr-4">Fecha</th>
+                    <th className="py-2 pr-4">Tipo</th>
+                    <th className="py-2 pr-4">Canal</th>
+                    <th className="py-2 pr-4">Destino</th>
+                    <th className="py-2 pr-4">Estado</th>
+                    <th className="py-2 pr-4"></th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody className="divide-y divide-zinc-100">
+                  {cita.mensajes.map((m) => (
+                    <tr key={m.id}>
+                      <td className="py-2 pr-4 text-zinc-500">
+                        {formatFechaCorta(m.enviadoEn)} {formatHora(m.enviadoEn)}
+                      </td>
+                      <td className="py-2 pr-4">{TIPO_LABEL[m.tipo]}</td>
+                      <td className="py-2 pr-4">{CANAL_LABEL[m.canal]}</td>
+                      <td className="py-2 pr-4 text-zinc-500">{m.destino}</td>
+                      <td className="py-2 pr-4">
+                        <EstadoMensajeBadge estado={m.estado} />
+                        {m.error && <div className="text-xs text-red-500">{m.error}</div>}
+                      </td>
+                      <td className="py-2 pr-4">
+                        {esAdmin && m.estado === "FALLIDO" && (
+                          <ReintentarMensaje citaId={cita.id} mensajeLogId={m.id} />
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
         )}
       </div>
     </div>

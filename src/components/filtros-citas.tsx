@@ -31,10 +31,10 @@ export function FiltrosCitas() {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-end gap-3 border-b border-zinc-100 pb-4">
+      <div className="flex flex-wrap items-end gap-x-3 gap-y-2 border-b border-zinc-100 pb-4">
         <div>
           <label className="etiqueta">Ver un día</label>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <button
               type="button"
               onClick={() => set({ desde: hoyCr(), hasta: hoyCr() })}
@@ -59,8 +59,8 @@ export function FiltrosCitas() {
         )}
       </div>
 
-      <div className="flex flex-wrap items-end gap-3">
-        <div className="min-w-52 flex-1">
+      <div className="space-y-3">
+        <div>
           <label className="etiqueta">Buscar</label>
           <input
             className="campo"
@@ -72,33 +72,38 @@ export function FiltrosCitas() {
             onBlur={(e) => set({ q: e.target.value })}
           />
         </div>
-        <div>
-          <label className="etiqueta">Estado</label>
-          <select
-            className="campo"
-            defaultValue={params.get("estado") ?? ""}
-            onChange={(e) => set({ estado: e.target.value })}
-          >
-            {ESTADOS.map((s) => (
-              <option key={s} value={s}>
-                {s === "" ? "Todos" : s[0] + s.slice(1).toLowerCase()}
-              </option>
-            ))}
-          </select>
+        <div className="grid gap-3 sm:grid-cols-[1fr_1fr_1fr_auto] sm:items-end">
+          <div>
+            <label className="etiqueta">Estado</label>
+            <select
+              className="campo"
+              defaultValue={params.get("estado") ?? ""}
+              onChange={(e) => set({ estado: e.target.value })}
+            >
+              {ESTADOS.map((s) => (
+                <option key={s} value={s}>
+                  {s === "" ? "Todos" : s[0] + s.slice(1).toLowerCase()}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="etiqueta">Desde</label>
+            <DatePicker value={desde} onChange={(v) => set({ desde: v })} placeholder="Cualquiera" />
+          </div>
+          <div>
+            <label className="etiqueta">Hasta</label>
+            <DatePicker value={hasta} onChange={(v) => set({ hasta: v })} placeholder="Cualquiera" />
+          </div>
+          {[...params.keys()].length > 0 && (
+            <button
+              className="btn-secundario w-full sm:w-auto"
+              onClick={() => router.push("/panel/citas")}
+            >
+              Limpiar
+            </button>
+          )}
         </div>
-        <div className="w-40">
-          <label className="etiqueta">Desde</label>
-          <DatePicker value={desde} onChange={(v) => set({ desde: v })} placeholder="Cualquiera" />
-        </div>
-        <div className="w-40">
-          <label className="etiqueta">Hasta</label>
-          <DatePicker value={hasta} onChange={(v) => set({ hasta: v })} placeholder="Cualquiera" />
-        </div>
-        {[...params.keys()].length > 0 && (
-          <button className="btn-secundario" onClick={() => router.push("/panel/citas")}>
-            Limpiar
-          </button>
-        )}
       </div>
     </div>
   );

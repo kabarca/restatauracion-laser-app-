@@ -43,7 +43,7 @@ export default async function CitasPage({ searchParams }: { searchParams: Search
 
     return (
       <div className="space-y-5">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <h1 className="text-xl font-semibold text-zinc-900">Citas</h1>
           {acciones}
         </div>
@@ -86,7 +86,7 @@ export default async function CitasPage({ searchParams }: { searchParams: Search
 
   return (
     <div className="space-y-5">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-xl font-semibold text-zinc-900">Citas</h1>
         <div className="flex gap-2">
           <a className="btn-secundario" href={`/panel/citas/export${qs ? `?${qs}` : ""}`}>
