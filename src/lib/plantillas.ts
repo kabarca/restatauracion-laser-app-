@@ -72,13 +72,12 @@ function textoAHtml(texto: string): string {
 
 // ── Email ───────────────────────────────────────────────────────────────────
 // Plantilla base compartida por todos los correos: logo real de la marca,
-// franja del color de marca, y una tarjeta blanca con sombra suave. El logo
-// se sirve desde el propio sitio (${NEXT_PUBLIC_APP_URL}/logo-full.png), así
-// que hace falta que esa variable apunte al dominio público en producción
-// para que el logo se vea en la bandeja de entrada del cliente.
+// franja del color de marca, y una tarjeta blanca con sombra suave. El logo se
+// carga desde una URL pública (env.EMAIL_LOGO_URL) — los clientes de correo no
+// pueden resolver localhost ni URLs internas.
 
 const MARCA = "#eb533c";
-const logoUrl = () => `${env.NEXT_PUBLIC_APP_URL}/logo-full.png`;
+const logoUrl = () => env.EMAIL_LOGO_URL;
 
 function layout(titulo: string, cuerpoHtml: string): string {
   return `<!doctype html>

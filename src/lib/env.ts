@@ -30,6 +30,13 @@ const schema = z.object({
   RESEND_API_KEY: z.string().optional().default(""),
   EMAIL_FROM: z.string().default("Restauración Láser <onboarding@resend.dev>"),
   EMAIL_EQUIPO: z.string().optional().default(""),
+  // Logo que se muestra en el encabezado de los correos. Debe ser una URL pública
+  // (los clientes de correo no pueden cargar localhost). Por defecto, el logo del
+  // sitio de marca.
+  EMAIL_LOGO_URL: z
+    .string()
+    .url()
+    .default("https://www.restauracionlaser.cr/logo/logo-full.png"),
 
   WHATSAPP_CONTACTO_PUBLICO: z.string().default("+506 8901 9811"),
 

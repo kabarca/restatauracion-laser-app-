@@ -23,6 +23,7 @@ y **recordatorios** automáticos por WhatsApp y correo.
 | Correo | Resend |
 | Job programado | Vercel Cron → `/api/cron/recordatorios` |
 | Teléfono internacional | `libphonenumber-js` (normaliza a E.164) |
+| Hosting | Vercel, subdominio propio `citas.restauracionlaser.cr` |
 
 ## Modo prueba (dry-run)
 

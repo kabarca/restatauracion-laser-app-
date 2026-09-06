@@ -177,19 +177,29 @@ Activá el recordatorio del mismo día y la encuesta desde **Panel → Ajustes**
 
 ## 6. Despliegue en Vercel
 
-1. Importar el repo en Vercel.
+El sistema vive en su propio subdominio: **`https://citas.restauracionlaser.cr`**
+(proyecto Vercel aparte del sitio de marca; el sitio de marca no se toca).
+
+1. Push del repo a `github.com/TCS231107/restatauracion-laser-app-` (rama `main`)
+   e importarlo en Vercel como proyecto nuevo.
 2. Cargar **todas** las variables de `.env.example` en Project Settings →
-   Environment Variables (Production + Preview).
+   Environment Variables (Production + Preview). En particular:
+   `NEXT_PUBLIC_APP_URL="https://citas.restauracionlaser.cr"`.
 3. Build command por defecto (`npm run build`, ya corre `prisma generate`).
-4. Primer deploy: aplicar las migraciones versionadas contra la base de producción:
+4. **Dominio:** Project → Settings → Domains → agregar `citas.restauracionlaser.cr`.
+   Vercel indica un registro **CNAME** (`citas` → `cname.vercel-dns.com` o el
+   valor que muestre). Crear ese CNAME en el DNS de `restauracionlaser.cr`
+   (nic.cr). Vercel emite el certificado TLS solo tras la propagación.
+5. Primer deploy: aplicar las migraciones versionadas contra la base de producción:
    ```bash
    DATABASE_URL='<pooler>' DIRECT_URL='<directa>' npx prisma migrate deploy
    ```
    (Opcional: agregar `prisma migrate deploy` a un paso de post-deploy en Vercel.)
-5. Crear el primer admin (§1.5) apuntando a la base de producción.
-6. Verificar en **Ajustes** del panel que WhatsApp y Email digan *conectado*, y
+6. Crear el primer admin (§1.5) apuntando a la base de producción.
+7. Verificar en **Ajustes** del panel que WhatsApp y Email digan *conectado*, y
    activar ahí el recordatorio del mismo día / la encuesta si se quieren.
-7. Poner `NEXT_PUBLIC_APP_URL` con el dominio real (los enlaces de la encuesta lo usan).
+8. (Opcional, coherencia) Supabase → Auth → **Site URL** =
+   `https://citas.restauracionlaser.cr`.
 
 ---
 
@@ -199,6 +209,8 @@ Activá el recordatorio del mismo día y la encuesta desde **Panel → Ajustes**
 - [ ] Plantillas `confirmacion_cita` y `recordatorio_cita` **aprobadas**
 - [ ] Dominio de correo verificado en Resend
 - [ ] `CRON_SECRET` configurado en Vercel
+- [ ] `NEXT_PUBLIC_APP_URL` = `https://citas.restauracionlaser.cr` en Vercel
+- [ ] `citas.restauracionlaser.cr` resuelve y carga el panel (CNAME + TLS)
 - [ ] `FORCE_DRY_RUN` = `false` en producción
 - [ ] Cita de prueba real: confirmación llega por WhatsApp y correo
 - [ ] Cron de prueba: recordatorio llega y `mensajes_log` lo registra
