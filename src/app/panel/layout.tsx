@@ -9,7 +9,7 @@ export default async function PanelLayout({ children }: { children: React.ReactN
   const usuario = await requireUsuario();
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen animate-[rl-fade-in_350ms_ease-out] motion-reduce:animate-none">
       <header className="border-b border-zinc-200 bg-white">
         <div className="mx-auto max-w-5xl px-4 py-3">
           <div className="flex items-center justify-between gap-3">
