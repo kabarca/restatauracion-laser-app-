@@ -28,7 +28,7 @@ export function CitasTabla({
       {/* Móvil: tarjetas */}
       <ul className="space-y-2 sm:hidden">
         {citas.map((c) => (
-          <li key={c.id} className="rounded-xl border border-zinc-200 bg-white p-3">
+          <li key={c.id} className="relative rounded-xl border border-zinc-200 bg-white p-3">
             <Link href={`/panel/citas/${c.id}`} className="flex items-start justify-between gap-3">
               <div className="min-w-0">
                 <div className="truncate font-medium text-zinc-900">{c.cliente.nombre}</div>
@@ -45,22 +45,23 @@ export function CitasTabla({
                     }`}
                 </div>
               </div>
-              <div className="flex flex-shrink-0 flex-col items-end gap-1.5">
+              <div className="flex-shrink-0">
                 <EstadoCitaBadge estado={c.estado} />
-                {c.ubicacionUrl && (
-                  <a
-                    href={c.ubicacionUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    onClick={(e) => e.stopPropagation()}
-                    className="text-zinc-400"
-                    title="Abrir ubicación en el mapa"
-                  >
-                    📍
-                  </a>
-                )}
               </div>
             </Link>
+            {/* Hermano del Link (no anidado): un <a> dentro de otro <a> es HTML inválido. */}
+            {c.ubicacionUrl && (
+              <a
+                href={c.ubicacionUrl}
+                target="_blank"
+                rel="noreferrer"
+                title="Abrir ubicación en el mapa"
+                aria-label="Abrir ubicación en el mapa"
+                className="absolute bottom-1.5 right-2 p-1.5 text-base leading-none text-zinc-400"
+              >
+                📍
+              </a>
+            )}
           </li>
         ))}
       </ul>
